@@ -4,17 +4,22 @@ namespace Assets.Game
 {
 	internal class World
 	{
-		public readonly NitroEcs.World EcsWorld = new();
+		public readonly Player Player;
+		public readonly NitroEcs.World EcsWorld;
 		public readonly Systems.FloatingOrigin FloatingOrigin;
-		public readonly GameObject Player;
+		public readonly Systems.TerrainChunks TerrainChunks;
 
-		public World()
+		public World(
+			Player player,
+			NitroEcs.World ecsWorld,
+			Systems.FloatingOrigin floatingOrigin,
+			Systems.TerrainChunks terrainChunks
+			)
 		{
-			FloatingOrigin = new(Player.transform, EcsWorld);
-
-			EcsWorld.AddPool<TransformComponent>();
-			EcsWorld.RegisterSystem(FloatingOrigin);
-			EcsWorld.Construct();
+			Player = player;
+			EcsWorld = ecsWorld;
+			FloatingOrigin = floatingOrigin;
+			TerrainChunks = terrainChunks;
 		}
 	}
 }

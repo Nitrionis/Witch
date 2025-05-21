@@ -49,12 +49,14 @@
     <Compile Include="Assets\Game\RotationTest.cs" />
     <Compile Include="Assets\Game\NitroEcs\Pool.cs" />
     <Compile Include="Assets\Game\World.cs" />
+    <Compile Include="Assets\Game\Systems\Components\Chunk.cs" />
     <Compile Include="Assets\Game\NitroEcs\StandalonePool.cs" />
     <Compile Include="Assets\Game\Terrain\NoiseTest\NoiseTest.cs" />
     <Compile Include="Assets\Game\Systems\TerrainChunks.cs" />
     <Compile Include="Assets\Game\NitroEcs\World.cs" />
     <Compile Include="Assets\Game\TransformComponent.cs" />
     <Compile Include="Assets\Game\NitroEcs\Tools.cs" />
+    <Compile Include="Assets\Game\Player.cs" />
     <Compile Include="Assets\Game\Tools.cs" />
     <Compile Include="Assets\Game\Systems\FloatingOrigin.cs" />
     <Compile Include="Assets\Game\NitroEcs\Filter.cs" />

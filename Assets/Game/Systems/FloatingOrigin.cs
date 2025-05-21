@@ -7,35 +7,38 @@ namespace Assets.Game.Systems
 {
 	internal class FloatingOrigin : NitroEcs.World.ISystem
 	{
-		private readonly Transform playerTransform;
+		private readonly Player player;
 		private readonly NitroEcs.World ecsWorld;
-		private NitroEcs.Filter<TransformComponent> transformsFilter;
+		private readonly Filter<TransformComponent> transformsFilter;
 
 		public double2 HighPrecisionOffset { get; private set; }
 
-		public FloatingOrigin(Transform playerTransform, NitroEcs.World world)
+		public FloatingOrigin(
+			Player player,
+			NitroEcs.World ecsWorld,
+			Filter<TransformComponent> transformsFilter
+			)
 		{
-			this.playerTransform = playerTransform;
-			ecsWorld = world;
+			this.player = player;
+			this.ecsWorld = ecsWorld;
+			this.transformsFilter = transformsFilter;
 		}
 
 		public void FinalInitialize()
 		{
-			var pool = ecsWorld.GetPool<TransformComponent>();
-			transformsFilter = new(pool);
 		}
 
 		public void RegisterComponentTypes() {}
 
 		public void Tick()
 		{
-			var playerPosition = playerTransform.position;
+			var playerPosition = player.Transform.position;
 			if (Math.Abs(playerPosition.x) < 1000 && Math.Abs(playerPosition.z) < 1000) {
 				return;
 			}
 
 			var offset = new Vector3(playerPosition.x, 0, playerPosition.z);
-			playerTransform.position = new Vector3(0, playerPosition.y, 0);
+			player.Transform.position = new Vector3(0, playerPosition.y, 0);
 
 			HighPrecisionOffset += new double2(offset.x, offset.z);
 

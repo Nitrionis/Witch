@@ -1,17 +1,24 @@
 ﻿using UnityEngine;
+using Assets.Game.NitroEcs;
+using Assets.Game.Systems.Components;
 
 namespace Assets.Game.Systems
 {
 	internal class TerrainChunks : NitroEcs.World.ISystem
 	{
-		private readonly Transform playerTransform;
+		private readonly Player player;
 		private readonly NitroEcs.World ecsWorld;
-		private NitroEcs.Filter<Chunk> chunksFilter;
+		private readonly Filter<Chunk> chunksFilter;
 
-		public TerrainChunks(Transform playerTransform, NitroEcs.World world)
+		public TerrainChunks(
+			Player player,
+			NitroEcs.World ecsWorld,
+			Filter<Chunk> chunksFilter
+			)
 		{
-			this.playerTransform = playerTransform;
-			ecsWorld = world;
+			this.player = player;
+			this.ecsWorld = ecsWorld;
+			this.chunksFilter = chunksFilter;
 		}
 
 		public void FinalInitialize()
@@ -21,19 +28,11 @@ namespace Assets.Game.Systems
 
 		public void RegisterComponentTypes()
 		{
-			ecsWorld.AddPool<Chunk>();
-			var pool = ecsWorld.GetPool<Chunk>();
-			chunksFilter = new(pool);
 		}
 
 		public void Tick()
 		{
 			
-		}
-
-		private struct Chunk
-		{
-
 		}
 	}
 }
