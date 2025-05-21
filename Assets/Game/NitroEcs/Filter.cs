@@ -67,7 +67,7 @@ namespace Assets.Game.NitroEcs
 
 		public ref struct Enumerator
 		{
-			private NitroEcs.Enumerator enumerator;
+			private global::Assets.Game.NitroEcs.Enumerator enumerator;
 			private readonly World.ComponentsMask masks;
 			private readonly Pool<T1> p1;
 
@@ -87,7 +87,7 @@ namespace Assets.Game.NitroEcs
 				ushort[] entities, int count, ReadOnlySpan<ulong> masks, Pool<T1> p1
 			) {
 				this.p1 = p1;
-				enumerator = new NitroEcs.Enumerator(entities, count, p1.World);
+				enumerator = new Assets.Game.NitroEcs.Enumerator(entities, count, p1.World);
 				this.masks = new World.ComponentsMask(p1.World, masks);
 			}
 
@@ -132,7 +132,7 @@ namespace Assets.Game.NitroEcs
 
 		public ref struct Enumerator
 		{
-			private NitroEcs.Enumerator enumerator;
+			private global::Assets.Game.NitroEcs.Enumerator enumerator;
 			private readonly World.ComponentsMask masks;
 			private readonly Pool<T1> p1;
 			private readonly Pool<T2> p2;
@@ -160,7 +160,7 @@ namespace Assets.Game.NitroEcs
 				Pool<T1> p1, Pool<T2> p2
 			) {
 				(this.p1, this.p2) = (p1, p2);
-				enumerator = new NitroEcs.Enumerator(entities, count, p1.World);
+				enumerator = new Assets.Game.NitroEcs.Enumerator(entities, count, p1.World);
 				this.masks = new World.ComponentsMask(p1.World, masks);
 			}
 
@@ -211,7 +211,7 @@ namespace Assets.Game.NitroEcs
 
 		public ref struct Enumerator
 		{
-			private NitroEcs.Enumerator enumerator;
+			private global::Assets.Game.NitroEcs.Enumerator enumerator;
 			private readonly World.ComponentsMask masks;
 			private readonly Pool<T1> p1;
 			private readonly Pool<T2> p2;
@@ -246,7 +246,7 @@ namespace Assets.Game.NitroEcs
 				Pool<T1> p1, Pool<T2> p2, Pool<T3> p3
 			) {
 				(this.p1, this.p2, this.p3) = (p1, p2, p3);
-				enumerator = new NitroEcs.Enumerator(entities, count, p1.World);
+				enumerator = new Assets.Game.NitroEcs.Enumerator(entities, count, p1.World);
 				this.masks = new World.ComponentsMask(p1.World, masks);
 			}
 
@@ -304,7 +304,7 @@ namespace Assets.Game.NitroEcs
 
 		public ref struct Enumerator
 		{
-			private NitroEcs.Enumerator enumerator;
+			private global::Assets.Game.NitroEcs.Enumerator enumerator;
 			private readonly World.ComponentsMask masks;
 			private readonly Pool<T1> p1;
 			private readonly Pool<T2> p2;
@@ -346,7 +346,7 @@ namespace Assets.Game.NitroEcs
 				Pool<T1> p1, Pool<T2> p2, Pool<T3> p3, Pool<T4> p4
 			) {
 				(this.p1, this.p2, this.p3, this.p4) = (p1, p2, p3, p4);
-				enumerator = new NitroEcs.Enumerator(entities, count, p1.World);
+				enumerator = new Assets.Game.NitroEcs.Enumerator(entities, count, p1.World);
 				this.masks = new World.ComponentsMask(p1.World, masks);
 			}
 

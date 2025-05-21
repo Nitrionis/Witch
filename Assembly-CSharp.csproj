@@ -48,15 +48,20 @@
   <ItemGroup>
     <Compile Include="Assets\Game\RotationTest.cs" />
     <Compile Include="Assets\Game\NitroEcs\Pool.cs" />
+    <Compile Include="Assets\Game\World.cs" />
     <Compile Include="Assets\Game\NitroEcs\StandalonePool.cs" />
     <Compile Include="Assets\Game\Terrain\NoiseTest\NoiseTest.cs" />
+    <Compile Include="Assets\Game\Systems\TerrainChunks.cs" />
     <Compile Include="Assets\Game\NitroEcs\World.cs" />
+    <Compile Include="Assets\Game\TransformComponent.cs" />
     <Compile Include="Assets\Game\NitroEcs\Tools.cs" />
     <Compile Include="Assets\Game\Tools.cs" />
+    <Compile Include="Assets\Game\Systems\FloatingOrigin.cs" />
     <Compile Include="Assets\Game\NitroEcs\Filter.cs" />
     <Compile Include="Assets\Game\NitroEcs\Diff.cs" />
     <Compile Include="Assets\Game\NitroEcs\Chain.cs" />
     <Compile Include="Assets\Game\NitroEcs\Entity.cs" />
+    <Compile Include="Assets\Game\Game.cs" />
     <Compile Include="Assets\Game\NitroEcs\Mirror.cs" />
     <Reference Include="UnityEngine">
       <HintPath>C:\Program Files\Unity\Hub\Editor\6000.0.41f1\Editor\Data\Managed\UnityEngine\UnityEngine.dll</HintPath>
