@@ -65,6 +65,7 @@
     <Compile Include="Assets\Game\NitroEcs\Entity.cs" />
     <Compile Include="Assets\Game\Game.cs" />
     <Compile Include="Assets\Game\NitroEcs\Mirror.cs" />
+    <None Include="Assets\Packages\SimpleInjector.5.5.0\lib\netstandard2.1\SimpleInjector.xml" />
     <Reference Include="UnityEngine">
       <HintPath>C:\Program Files\Unity\Hub\Editor\6000.0.41f1\Editor\Data\Managed\UnityEngine\UnityEngine.dll</HintPath>
     </Reference>
@@ -424,6 +425,9 @@
     </Reference>
     <Reference Include="Mono.Cecil">
       <HintPath>C:\Users\nitro\Witch\Library\PackageCache\com.unity.nuget.mono-cecil@d6f9955a5d5f\Mono.Cecil.dll</HintPath>
+    </Reference>
+    <Reference Include="SimpleInjector">
+      <HintPath>C:\Users\nitro\Witch\Assets\Packages\SimpleInjector.5.5.0\lib\netstandard2.1\SimpleInjector.dll</HintPath>
     </Reference>
     <Reference Include="Unity.Android.Types">
       <HintPath>C:\Program Files\Unity\Hub\Editor\6000.0.41f1\Editor\Data\PlaybackEngines\AndroidPlayer\Unity.Android.Types.dll</HintPath>
