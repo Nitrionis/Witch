@@ -893,6 +893,9 @@
     <Reference Include="Unity.TextMeshPro">
       <HintPath>C:\Users\nitro\Witch\Library\ScriptAssemblies\Unity.TextMeshPro.dll</HintPath>
     </Reference>
+    <Reference Include="NuGetForUnity">
+      <HintPath>C:\Users\nitro\Witch\Library\ScriptAssemblies\NuGetForUnity.dll</HintPath>
+    </Reference>
     <Reference Include="Unity.VisualScripting.SettingsProvider.Editor">
       <HintPath>C:\Users\nitro\Witch\Library\ScriptAssemblies\Unity.VisualScripting.SettingsProvider.Editor.dll</HintPath>
     </Reference>
