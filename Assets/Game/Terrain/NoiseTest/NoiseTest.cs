@@ -1,4 +1,5 @@
 using System.IO;
+using System.Threading.Tasks;
 using UnityEngine;
 
 public class NoiseTest : MonoBehaviour
@@ -33,35 +34,28 @@ public class NoiseTest : MonoBehaviour
 		rend.material.mainTexture = noiseTex;
 	}
 
-	private float[] GenerateHeights(Vector2 origin, int octaves, float scale)
+	private float GenerateHeight(Vector2Int pos, Vector2 origin, int octaves, float scale)
 	{
-		var heights = new float[width * height];
+		float amplitude = 1;
+		float frequency = 1;
+		float noiseHeight = 0;
 
-		for (int x = 0; x < width; x++) {
-			for (int y = 0; y < height; y++) {
-				float amplitude = 1;
-				float frequency = 1;
-				float noiseHeight = 0;
+		for (int i = 0; i < octaves; i++) {
+			float sampleX = origin.x + pos.x / scale * frequency;
+			float sampleY = origin.y + pos.y / scale * frequency;
 
-				for (int i = 0; i < octaves; i++) {
-					float sampleX = origin.x + x / scale * frequency;
-					float sampleY = origin.y + y / scale * frequency;
+			float perlinValue = Mathf.PerlinNoise(sampleX, sampleY) * 2 - 1; // Range [-1, 1]
+			noiseHeight += perlinValue * amplitude;
 
-					float perlinValue = Mathf.PerlinNoise(sampleX, sampleY) * 2 - 1; // Range [-1, 1]
-					noiseHeight += perlinValue * amplitude;
-
-					amplitude *= persistence;
-					frequency *= lacunarity;
-				}
-
-				float h = Mathf.InverseLerp(-1, 1, noiseHeight); // Normalize to [0,1]
-				h = Mathf.Clamp(h, threshold, 1f);
-				h = (h - threshold) * (1f / (1f - threshold));
-				heights[y * width + x] = h;
-			}
+			amplitude *= persistence;
+			frequency *= lacunarity;
 		}
 
-		return heights;
+		float h = Mathf.InverseLerp(-1, 1, noiseHeight); // Normalize to [0,1]
+		h = Mathf.Clamp(h, threshold, 1f);
+		h = (h - threshold) * (1f / (1f - threshold));
+
+		return h;
 	}
 
 	private void Update()
@@ -87,60 +81,51 @@ public class NoiseTest : MonoBehaviour
 
 	private void UpdateTexture()
 	{
-		var heights = GenerateHeights(origin, octaves, scale);
+		var data = new ushort[width * height];
 
-		var heights_1 = GenerateHeights(origin + 100f * Vector2.one, octaves: 2, scale * 3f);
-		var heights_2 = GenerateHeights(origin + 200f * Vector2.one, octaves: 2, scale * 3f);
-		var heights_3 = GenerateHeights(origin + 300f * Vector2.one, octaves: 2, scale * 3f);
-		var heights_4 = GenerateHeights(origin + 100f * Vector2.up, octaves: 2, scale * 3f);
-		var heights_5 = GenerateHeights(origin + 200f * Vector2.down, octaves: 2, scale * 3f);
-		var heights_6 = GenerateHeights(origin + 300f * Vector2.left, octaves: 2, scale * 3f);
-
-		var data = new ushort[heights.Length];
-
-		for (int x = 0; x < width; x++) {
-			for (int y = 0; y < height; y++) {
-				int i = y * width + x;
-				var v = heights[i];
-				var v_1 = heights_1[i];
-				var v_2 = heights_2[i];
-				var v_3 = heights_3[i];
-				var v_4 = heights_4[i];
-				var v_5 = heights_5[i];
-				var v_6 = heights_6[i];
-				float v_t = v_1;
-				var biome = Biome.Meadow;
-				if (v_t < v_2) {
-					v_t = v_2;
-					biome = Biome.DeciduousForest;
-				}
-				if (v_t < v_3) {
-					v_t = v_3;
-					biome = Biome.ConiferousForest;
-				}
-				if (v_t < v_4) {
-					v_t = v_4;
-					biome = Biome.Flame;
-				}
-				if (v_t < v_5) {
-					v_t = v_5;
-					biome = Biome.Swamp;
-				}
-				if (v_t < v_6) {
-					v_t = v_6;
-					biome = Biome.Desert;
-				}
-				if (v < 0.0001f) {
-					biome = Biome.None;
-				}
-				if (v > 0.65f) {
-					biome = Biome.Mountains;
-				}
-				pix[i] = v < 0.01f ? Color.blue : v * BiomeToColor(biome);
-				const int MaxHeight = 4096;
-				data[i] = (ushort)(Mathf.Clamp((int)(v * MaxHeight), 0, MaxHeight) + ((int)biome << 12));
+		Parallel.For(0, data.Length, (i) => {
+			int y = i / width;
+			int x = i % width;
+			Vector2Int pos = new(x, y);
+			var b_h = GenerateHeight(pos, origin, octaves, scale);
+			var v_1 = GenerateHeight(pos, origin + 100f * Vector2.one, octaves: 2, scale * 3);
+			var v_2 = GenerateHeight(pos, origin + 200f * Vector2.one, octaves: 2, scale * 3);
+			var v_3 = GenerateHeight(pos, origin + 300f * Vector2.one, octaves: 2, scale * 3);
+			var v_4 = GenerateHeight(pos, origin + 100f * Vector2.up, octaves: 2, scale * 3);
+			var v_5 = GenerateHeight(pos, origin + 200f * Vector2.down, octaves: 2, scale * 3);
+			var v_6 = GenerateHeight(pos, origin + 300f * Vector2.left, octaves: 2, scale * 3);
+			float v_t = v_1;
+			var biome = Biome.Meadow;
+			if (v_t < v_2) {
+				v_t = v_2;
+				biome = Biome.DeciduousForest;
 			}
-		}
+			if (v_t < v_3) {
+				v_t = v_3;
+				biome = Biome.ConiferousForest;
+			}
+			if (v_t < v_4) {
+				v_t = v_4;
+				biome = Biome.Flame;
+			}
+			if (v_t < v_5) {
+				v_t = v_5;
+				biome = Biome.Swamp;
+			}
+			if (v_t < v_6) {
+				v_t = v_6;
+				biome = Biome.Desert;
+			}
+			if (b_h < 0.0001f) {
+				biome = Biome.None;
+			}
+			if (b_h > 0.65f) {
+				biome = Biome.Mountains;
+			}
+			pix[i] = b_h < 0.01f ? Color.blue : b_h * BiomeToColor(biome);
+			const int MaxHeight = 4096;
+			data[i] = (ushort)(Mathf.Clamp((int)(b_h * MaxHeight), 0, MaxHeight) + ((int)biome << 12));
+		});
 
 		// Copy the pixel data to the texture and load it into the GPU.
 		noiseTex.SetPixels(pix);

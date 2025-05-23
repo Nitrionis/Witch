@@ -420,14 +420,14 @@
     <Reference Include="nunit.framework">
       <HintPath>C:\Users\nitro\Witch\Library\PackageCache\com.unity.ext.nunit@60ef35ffd3cd\net40\unity-custom\nunit.framework.dll</HintPath>
     </Reference>
+    <Reference Include="SimpleInjector">
+      <HintPath>C:\Users\nitro\Witch\Assets\Packages\SimpleInjector.5.5.0\lib\netstandard2.1\SimpleInjector.dll</HintPath>
+    </Reference>
     <Reference Include="Unity.VisualScripting.Antlr3.Runtime">
       <HintPath>C:\Users\nitro\Witch\Library\PackageCache\com.unity.visualscripting@1b53f46e931b\Runtime\VisualScripting.Flow\Dependencies\NCalc\Unity.VisualScripting.Antlr3.Runtime.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Cecil">
       <HintPath>C:\Users\nitro\Witch\Library\PackageCache\com.unity.nuget.mono-cecil@d6f9955a5d5f\Mono.Cecil.dll</HintPath>
-    </Reference>
-    <Reference Include="SimpleInjector">
-      <HintPath>C:\Users\nitro\Witch\Assets\Packages\SimpleInjector.5.5.0\lib\netstandard2.1\SimpleInjector.dll</HintPath>
     </Reference>
     <Reference Include="Unity.Android.Types">
       <HintPath>C:\Program Files\Unity\Hub\Editor\6000.0.41f1\Editor\Data\PlaybackEngines\AndroidPlayer\Unity.Android.Types.dll</HintPath>
