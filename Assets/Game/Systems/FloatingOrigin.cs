@@ -8,19 +8,16 @@ namespace Assets.Game.Systems
 	internal class FloatingOrigin : NitroEcs.World.ISystem
 	{
 		private readonly Player player;
-		private readonly NitroEcs.World ecsWorld;
 		private readonly Filter<TransformComponent> transformsFilter;
 
 		public double2 HighPrecisionOffset { get; private set; }
 
 		public FloatingOrigin(
 			Player player,
-			NitroEcs.World ecsWorld,
 			Filter<TransformComponent> transformsFilter
 			)
 		{
 			this.player = player;
-			this.ecsWorld = ecsWorld;
 			this.transformsFilter = transformsFilter;
 		}
 
