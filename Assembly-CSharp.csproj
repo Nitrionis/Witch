@@ -11,9 +11,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>10.0.20506</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <RootNamespace>
-    </RootNamespace>
-    <ProjectGuid>{13B662A5-CCE9-AFD9-40B6-4783D1B53EDA}</ProjectGuid>
+    <RootNamespace></RootNamespace>
+    <ProjectGuid>{13b662a5-cce9-afd9-40b6-4783d1b53eda}</ProjectGuid>
     <ProjectTypeGuids>{E097FAD1-6243-4DAD-9C02-E9B9EFC3FFC1};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
@@ -62,6 +61,7 @@
     <Compile Include="Assets\Game\Systems\FloatingOrigin.cs" />
     <Compile Include="Assets\Game\Array2D.cs" />
     <Compile Include="Assets\Game\NitroEcs\Filter.cs" />
+    <Compile Include="Assets\Game\Terrain\Compressor.cs" />
     <Compile Include="Assets\Game\NitroEcs\Diff.cs" />
     <Compile Include="Assets\Game\NitroEcs\Chain.cs" />
     <Compile Include="Assets\Game\NitroEcs\Entity.cs" />

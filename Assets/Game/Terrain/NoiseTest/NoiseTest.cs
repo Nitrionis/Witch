@@ -1,5 +1,8 @@
+using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
+using Assets.Game.Terrain;
+using Unity.Collections;
 using UnityEngine;
 
 public class NoiseTest : MonoBehaviour
@@ -69,7 +72,7 @@ public class NoiseTest : MonoBehaviour
 			return;
 		}
 		
-		Debug.Log("Reload Noise");
+		UnityEngine.Debug.Log("Reload Noise");
 		
 		cachedOrigin = origin;
 		cachedScale = scale;
@@ -124,19 +127,49 @@ public class NoiseTest : MonoBehaviour
 			}
 			pix[i] = b_h < 0.01f ? Color.blue : b_h * BiomeToColor(biome);
 			const int MaxHeight = 4096;
-			data[i] = (ushort)(Mathf.Clamp((int)(b_h * MaxHeight), 0, MaxHeight) + ((int)biome << 12));
+			//data[i] = (ushort)(Mathf.Clamp((int)(b_h * MaxHeight), 0, MaxHeight) + ((int)biome << 12));
+			data[i] = (ushort)Mathf.Clamp((int)(b_h * MaxHeight), 0, MaxHeight);
 		});
 
 		// Copy the pixel data to the texture and load it into the GPU.
 		noiseTex.SetPixels(pix);
 		noiseTex.Apply();
 
-		using var fs = File.Create(@"C:\Users\nitro\Witch\Assets\Game\Terrain\map.bin");
+		/*using var fs = File.Create(@"C:\Users\nitro\Witch\Assets\Game\Terrain\map.bin");
 		using var bw = new BinaryWriter(fs);
 		foreach (var v in data) {
 			bw.Write(v);
 		}
-		bw.Flush();
+		bw.Flush();*/
+
+		var src = new NativeArray<ushort>(data.Length, Allocator.TempJob);
+		var unpacked = new NativeArray<ushort>(data.Length, Allocator.TempJob);
+		var packed = new NativeArray<byte>(data.Length * 2, Allocator.TempJob);
+		for (int i = 0; i < src.Length; i++) {
+			src[i] = data[i];
+		}
+		try {
+			var sw = Stopwatch.StartNew();
+			Compressor.Pack(src, packed, out var usedLength);
+			UnityEngine.Debug.Log($"Compressor.Pack: src_len:{src.Length} packed_len:{usedLength} elapsed: {sw.ElapsedMilliseconds} ms");
+			sw = Stopwatch.StartNew();
+			Compressor.Unpack(packed.Slice(0, usedLength), unpacked);
+			UnityEngine.Debug.Log($"Compressor.Unpack: packed_len:{usedLength} unpacked_len:{unpacked.Length} elapsed: {sw.ElapsedMilliseconds} ms");
+
+			int errorCount = 0;
+			for (int i = 0; i < src.Length; i++) {
+				if (src[i] != unpacked[i]) {
+					errorCount++;
+					if (errorCount < 10) {
+						UnityEngine.Debug.Log($"error: i:{i} src[i]:{src[i]} unpacked[i]:{unpacked[i]}");
+					}
+				}
+			}
+			UnityEngine.Debug.Log($"errorCount: {errorCount}");
+		} finally {
+			src.Dispose();
+			packed.Dispose();
+		}
 	}
 
 	private static Color BiomeToColor(Biome biome)
