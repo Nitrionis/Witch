@@ -67,6 +67,9 @@
     <Compile Include="Assets\Game\NitroEcs\Entity.cs" />
     <Compile Include="Assets\Game\Game.cs" />
     <Compile Include="Assets\Game\NitroEcs\Mirror.cs" />
+    <None Include="Assets\Game\Materials\Shaders\Body_Shader.shader" />
+    <None Include="Assets\Game\Materials\Shaders\Dress_Shader_Front.shader" />
+    <None Include="Assets\Game\Materials\Shaders\Dress_Shader_Back.shader" />
     <None Include="Assets\Packages\SimpleInjector.5.5.0\lib\netstandard2.1\SimpleInjector.xml" />
     <Reference Include="UnityEngine">
       <HintPath>C:\Program Files\Unity\Hub\Editor\6000.0.41f1\Editor\Data\Managed\UnityEngine\UnityEngine.dll</HintPath>
