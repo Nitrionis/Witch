@@ -6,6 +6,7 @@ Shader "Unlit/Body_Shader"
         _Color ("Main Color", Color) = (1,1,1,1)
         _ShadeColor ("Shade Color", Color) = (0,0,0,1)
         _Threshold ("_Threshold", Float) = 0.5
+        _Toon ("_Toon", Range(0.0, 1.0)) = 0.5
     }
     SubShader
     {
@@ -42,6 +43,7 @@ Shader "Unlit/Body_Shader"
             fixed4 _Color;
             fixed4 _ShadeColor;
             float _Threshold;
+            float _Toon;
 
             v2f vert (appdata v)
             {
@@ -58,7 +60,8 @@ Shader "Unlit/Body_Shader"
                 fixed4 color = _Color * tex2D(_MainTex, i.uv);
                 float lf = max(0, dot(i.normalWS, _WorldSpaceLightPos0.xyz));
                 //lf = lerp(0.0, 1.0, step(_Threshold, lf));
-                lf = lerp(0.0, lerp(0.5, 1.0, step((1.0 + _Threshold) * 0.5, lf)), step(_Threshold, lf));
+                float toon = lerp(0.0, lerp(0.5, 1.0, step((1.0 + _Threshold) * 0.5, lf)), step(_Threshold, lf));
+                lf = lerp(toon, lf, _Toon);
                 color.rgb = lerp(_ShadeColor.rgb, _Color.rgb, lf);
                 return color;
             }

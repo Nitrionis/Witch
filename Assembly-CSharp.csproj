@@ -65,6 +65,7 @@
     <Compile Include="Assets\Game\NitroEcs\Diff.cs" />
     <Compile Include="Assets\Game\NitroEcs\Chain.cs" />
     <Compile Include="Assets\Game\NitroEcs\Entity.cs" />
+    <Compile Include="Assets\Game\Prefabs\Database.cs" />
     <Compile Include="Assets\Game\Game.cs" />
     <Compile Include="Assets\Game\NitroEcs\Mirror.cs" />
     <None Include="Assets\Game\Materials\Shaders\Body_Shader.shader" />
