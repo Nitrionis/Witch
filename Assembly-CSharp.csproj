@@ -54,7 +54,7 @@
     <Compile Include="Assets\Game\Terrain\NoiseTest\NoiseTest.cs" />
     <Compile Include="Assets\Game\Systems\TerrainChunks.cs" />
     <Compile Include="Assets\Game\NitroEcs\World.cs" />
-    <Compile Include="Assets\Game\TransformComponent.cs" />
+    <Compile Include="Assets\Game\Systems\Components\TransformComponent.cs" />
     <Compile Include="Assets\Game\NitroEcs\Tools.cs" />
     <Compile Include="Assets\Game\Player.cs" />
     <Compile Include="Assets\Game\Tools.cs" />
