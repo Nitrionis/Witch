@@ -57,6 +57,7 @@
     <Compile Include="Assets\Game\NitroEcs\Tools.cs" />
     <Compile Include="Assets\Game\Player.cs" />
     <Compile Include="Assets\Game\Systems\FloatingOrigin.cs" />
+    <Compile Include="Assets\Game\Tools\Alignment.cs" />
     <Compile Include="Assets\Game\Collections\Array2D.cs" />
     <Compile Include="Assets\Game\Systems\Components\TransformComponent.cs" />
     <Compile Include="Assets\Game\Tools\GeometricTool.cs" />
