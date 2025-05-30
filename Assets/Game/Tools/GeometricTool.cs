@@ -3,11 +3,6 @@ using UnityEngine;
 
 namespace Game
 {
-	public class Tools
-	{
-		
-	}
-	
 	public class GeometricTool
 	{
 		public static Vector3 CirclePoint(double angele01, Vector3 right, Vector3 up)
