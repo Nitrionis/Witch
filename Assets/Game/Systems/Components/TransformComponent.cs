@@ -2,7 +2,7 @@
 
 namespace Assets.Game
 {
-	internal struct TransformComponent
+	public struct TransformComponent
 	{
 		public Transform Transform;
 	}

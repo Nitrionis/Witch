@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Assets.Game.Tools
 {
@@ -6,43 +8,30 @@ namespace Assets.Game.Tools
 	{
 		private static int value;
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static int Get()
 		{
-			if (value != 0) {
-				return value;
+			if (value == 0) {
+				value = CalculateAlignment(typeof(T));
 			}
-			value = CalculateAlignment(typeof(T));
 			return value;
 		}
 
+		[MethodImpl(MethodImplOptions.NoInlining)]
 		public static int CalculateAlignment(Type type)
 		{
-			int alignment = 1;
-			var fields = type.GetFields();
-
-			foreach (var field in fields) {
-				int fieldAlignment = 1;
-
-				if (field.FieldType == typeof(byte) || field.FieldType == typeof(sbyte))
-					fieldAlignment = 1;
-				else if (field.FieldType == typeof(short) || field.FieldType == typeof(ushort))
-					fieldAlignment = 2;
-				else if (field.FieldType == typeof(int) || field.FieldType == typeof(uint) ||
-						 field.FieldType == typeof(float))
-					fieldAlignment = 4;
-				else if (field.FieldType == typeof(long) || field.FieldType == typeof(ulong) ||
-						 field.FieldType == typeof(double))
-					fieldAlignment = 8;
-				else if (field.FieldType == typeof(IntPtr) || field.FieldType == typeof(UIntPtr))
-					fieldAlignment = IntPtr.Size;
-				else if (field.FieldType.IsValueType) // For nested structs
-					fieldAlignment = CalculateAlignment(field.FieldType);
-
-				if (fieldAlignment > alignment)
-					alignment = fieldAlignment;
+			var structLayout = type.StructLayoutAttribute;
+			if (structLayout != null && structLayout.Value == LayoutKind.Explicit) {
+				return structLayout.Pack;
 			}
-
-			return alignment;
+			int maxAlignment = 1;
+			foreach (var field in type.GetFields()) {
+				int fieldAlignment = field.FieldType.IsPrimitive
+					? Marshal.SizeOf(field.FieldType)
+					: CalculateAlignment(field.FieldType);
+				maxAlignment = Math.Max(maxAlignment, fieldAlignment);
+			}
+			return maxAlignment;
 		}
 	}
 }

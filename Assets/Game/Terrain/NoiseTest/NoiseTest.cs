@@ -168,6 +168,7 @@ public class NoiseTest : MonoBehaviour
 			UnityEngine.Debug.Log($"errorCount: {errorCount}");
 		} finally {
 			src.Dispose();
+			unpacked.Dispose();
 			packed.Dispose();
 		}
 	}
