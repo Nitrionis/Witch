@@ -1,0 +1,9 @@
+﻿{
+	"hlsl.preprocessorDefinitions": {
+		"CBUFFER_START(name)": "",
+		"CBUFFER_END": ""
+	},
+	"hlsl.additionalIncludeDirectories": [
+		".\\ShaderIncludeLinks"
+	]
+}
