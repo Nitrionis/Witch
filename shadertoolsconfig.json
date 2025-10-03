@@ -1,7 +1,6 @@
 ﻿{
 	"hlsl.preprocessorDefinitions": {
-		"CBUFFER_START(name)": "",
-		"CBUFFER_END": ""
+		"SHADER_API_VULKAN": ""
 	},
 	"hlsl.additionalIncludeDirectories": [
 		".\\ShaderIncludeLinks"

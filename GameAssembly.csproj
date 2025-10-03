@@ -55,7 +55,7 @@
     <UnityVersion>6000.1.8f1</UnityVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Analyzer Include="C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\Extensions\Microsoft\Visual Studio Tools for Unity\Analyzers\Microsoft.Unity.Analyzers.dll" />
+    <Analyzer Include="C:\Program Files\Microsoft Visual Studio\18\Insiders\Common7\IDE\Extensions\Microsoft\Visual Studio Tools for Unity\Analyzers\Microsoft.Unity.Analyzers.dll" />
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\6000.1.8f1\Editor\Data\Tools\Unity.SourceGenerators\Unity.SourceGenerators.dll" />
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\6000.1.8f1\Editor\Data\Tools\Unity.SourceGenerators\Unity.Properties.SourceGenerator.dll" />
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\6000.1.8f1\Editor\Data\Tools\Unity.SourceGenerators\Unity.UIToolkit.SourceGenerator.dll" />
@@ -70,6 +70,7 @@
     <Compile Include="Assets\Game\Systems\Components\TransformComponent.cs" />
     <Compile Include="Assets\Game\Systems\Components\Chunk.cs" />
     <Compile Include="Assets\Game\ClientServer\ClientShellCommands.cs" />
+    <Compile Include="Assets\Game\Experiments\TreeShadow.cs" />
     <Compile Include="Assets\Game\NitroEcs\StandalonePool.cs" />
     <Compile Include="Assets\Game\Tools\GeometricTool.cs" />
     <Compile Include="Assets\Game\NitroEcs\Filter.cs" />
@@ -79,6 +80,7 @@
     <Compile Include="Assets\Game\NitroEcs\Chain.cs" />
     <Compile Include="Assets\Game\Terrain\NoiseTest\NoiseTest.cs" />
     <Compile Include="Assets\Game\NitroEcs\Entity.cs" />
+    <Compile Include="Assets\Game\Experiments\VolumetricLightAndGlow.cs" />
     <Compile Include="Assets\Game\Systems\TerrainChunks.cs" />
     <Compile Include="Assets\Game\NitroEcs\World.cs" />
     <Compile Include="Assets\Game\Prefabs\Database.cs" />
@@ -89,14 +91,22 @@
     <Compile Include="Assets\Game\Game.cs" />
     <Compile Include="Assets\Game\NitroEcs\Mirror.cs" />
     <Compile Include="Assets\Game\ClientServer\CommandProcessors\DummyProcessor.cs" />
+    <Compile Include="Assets\Game\Experiments\SceneViewCamera3D.cs" />
     <Compile Include="Assets\Game\ClientServer\CommandProcessorCollection.cs" />
     <Compile Include="Assets\Game\ClientServer\GameShell.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Assets\Game\Materials\Shaders\Volumetric_Light.shader" />
+    <None Include="Assets\Game\Materials\Shaders\Dual_Blur.hlsl" />
+    <None Include="Assets\Game\Materials\Shaders\Volumetric_Light.hlsl" />
     <None Include="Assets\Game\Materials\Shaders\Body_Shader.shader" />
+    <None Include="Assets\Game\Materials\Shaders\Volumetric_Light_Final.hlsl" />
     <None Include="Assets\Game\Materials\Shaders\Dress_Shader_Front.shader" />
     <None Include="Assets\Game\GameAssembly.asmdef" />
+    <None Include="Assets\Game\Materials\Shaders\Dual_Blur_Upscale.shader" />
+    <None Include="Assets\Game\Materials\Shaders\Copy_Color_Depth.shader" />
     <None Include="Assets\Game\Materials\Shaders\Dress_Shader_Back.shader" />
+    <None Include="Assets\Game\Materials\Shaders\Volumetric_Light_Final.shader" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">
@@ -1113,6 +1123,14 @@
     </Reference>
     <Reference Include="Unity.Mathematics">
       <HintPath>Library\ScriptAssemblies\Unity.Mathematics.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.RenderPipelines.Universal.Runtime">
+      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Universal.Runtime.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.RenderPipelines.Core.Runtime">
+      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Core.Runtime.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEditor.UI">

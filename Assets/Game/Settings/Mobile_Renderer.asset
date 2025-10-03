@@ -1,5 +1,21 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-5944751573924052946
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 733e1d9f671412f488f3874502b3cd7d, type: 3}
+  m_Name: VolumetricLightAndGlow
+  m_EditorClassIdentifier: 
+  m_Active: 1
+  depthBlitMaterial: {fileID: 2100000, guid: ac84700d87f62eb498111b07df0dde4b, type: 2}
+  upscaleBlurMaterial: {fileID: 2100000, guid: 12c5d41a6355c064bb9c66805dc31e3e, type: 2}
+  finalMaterial: {fileID: 2100000, guid: 7e220f0dc8670c144a4fc872e873f6c8, type: 2}
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -24,8 +40,9 @@ MonoBehaviour:
     probeSamplingDebugMesh: {fileID: 0}
     probeSamplingDebugTexture: {fileID: 0}
     probeVolumeBlendStatesCS: {fileID: 0}
-  m_RendererFeatures: []
-  m_RendererFeatureMap: 
+  m_RendererFeatures:
+  - {fileID: -5944751573924052946}
+  m_RendererFeatureMap: 2e0050aef0ff7fad
   m_UseNativeRenderPass: 1
   xrSystemData: {fileID: 0}
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
