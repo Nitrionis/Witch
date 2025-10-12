@@ -92,6 +92,7 @@
     <Compile Include="Assets\Game\NitroEcs\Mirror.cs" />
     <Compile Include="Assets\Game\ClientServer\CommandProcessors\DummyProcessor.cs" />
     <Compile Include="Assets\Game\Experiments\SceneViewCamera3D.cs" />
+    <Compile Include="Assets\Game\UI\Cheats\Cheats.cs" />
     <Compile Include="Assets\Game\ClientServer\CommandProcessorCollection.cs" />
     <Compile Include="Assets\Game\ClientServer\GameShell.cs" />
   </ItemGroup>
@@ -1131,6 +1132,10 @@
     </Reference>
     <Reference Include="Unity.RenderPipelines.Core.Runtime">
       <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Core.Runtime.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.TextMeshPro">
+      <HintPath>Library\ScriptAssemblies\Unity.TextMeshPro.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEditor.UI">
