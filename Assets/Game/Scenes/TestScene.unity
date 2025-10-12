@@ -701,6 +701,53 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   dirLight: {fileID: 2019457901}
   cude: {fileID: 4563472813478871898, guid: 73b93abc026a1924f917e2ed6acdda38, type: 3}
+--- !u!1 &999484483
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 999484485}
+  - component: {fileID: 999484484}
+  m_Layer: 0
+  m_Name: CheatManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &999484484
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 999484483}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fc9d8cd2d2044154e832db81610db61b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cheatMenuSceneName: Cheats
+  enableCheats: 1
+  showDebugLogs: 0
+--- !u!4 &999484485
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 999484483}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 290.9313, y: 975.04095, z: -225.25974}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1034648616
 GameObject:
   m_ObjectHideFlags: 0
@@ -1962,3 +2009,4 @@ SceneRoots:
   - {fileID: 681898537}
   - {fileID: 74611943}
   - {fileID: 1756278133}
+  - {fileID: 999484485}

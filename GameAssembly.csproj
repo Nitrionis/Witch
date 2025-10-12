@@ -89,6 +89,7 @@
     <Compile Include="Assets\Game\NitroEcs\Tools.cs" />
     <Compile Include="Assets\Game\Player.cs" />
     <Compile Include="Assets\Game\Game.cs" />
+    <Compile Include="Assets\Game\UI\Cheats\CheatManager.cs" />
     <Compile Include="Assets\Game\NitroEcs\Mirror.cs" />
     <Compile Include="Assets\Game\ClientServer\CommandProcessors\DummyProcessor.cs" />
     <Compile Include="Assets\Game\Experiments\SceneViewCamera3D.cs" />
