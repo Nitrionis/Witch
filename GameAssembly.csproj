@@ -9,8 +9,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>10.0.20506</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <RootNamespace>
-    </RootNamespace>
+    <RootNamespace></RootNamespace>
     <ProjectGuid>{BA6A2256-1DA7-7A15-C141-8D4BA9831C6A}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
@@ -65,12 +64,12 @@
     <Compile Include="Assets\Game\Systems\FloatingOrigin.cs" />
     <Compile Include="Assets\Game\Tools\Alignment.cs" />
     <Compile Include="Assets\Game\NitroEcs\Pool.cs" />
-    <Compile Include="Assets\Game\Tools\FastNoiseLite.cs" />
     <Compile Include="Assets\Game\World.cs" />
     <Compile Include="Assets\Game\Collections\Array2D.cs" />
     <Compile Include="Assets\Game\ClientServer\ShellCommands.cs" />
     <Compile Include="Assets\Game\Systems\Components\TransformComponent.cs" />
     <Compile Include="Assets\Game\Systems\Components\Chunk.cs" />
+    <Compile Include="Assets\Game\UI\Cheats\ImagePreview.cs" />
     <Compile Include="Assets\Game\ClientServer\ClientShellCommands.cs" />
     <Compile Include="Assets\Game\Experiments\TreeShadow.cs" />
     <Compile Include="Assets\Game\NitroEcs\StandalonePool.cs" />
@@ -98,6 +97,7 @@
     <Compile Include="Assets\Game\UI\Cheats\Cheats.cs" />
     <Compile Include="Assets\Game\ClientServer\CommandProcessorCollection.cs" />
     <Compile Include="Assets\Game\ClientServer\GameShell.cs" />
+    <Compile Include="Assets\Game\Tools\FastNoiseLite.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Game\Materials\Shaders\Volumetric_Light.shader" />
