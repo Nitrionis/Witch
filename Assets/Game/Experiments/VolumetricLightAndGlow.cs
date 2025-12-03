@@ -24,7 +24,7 @@ public class VolumetricLightAndGlow : ScriptableRendererFeature
 	}
 
 	// Here you can inject one or multiple render passes in the renderer.
-	// This method is called when setting up the renderer once per-camera.
+	// This method is called when setting up the renderer once per-targetCamera.
 	public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
 	{
 		if (!TrySetShadersAndMaterials()) {
@@ -32,7 +32,7 @@ public class VolumetricLightAndGlow : ScriptableRendererFeature
 			return;
 		}
 
-		// Important to halt rendering here if camera is different, otherwise render textures will detect descriptor changes
+		// Important to halt rendering here if targetCamera is different, otherwise render textures will detect descriptor changes
 		if (
 			renderingData.cameraData.isPreviewCamera ||
 			renderingData.cameraData.isSceneViewCamera
@@ -279,7 +279,7 @@ public class VolumetricLightAndGlow : ScriptableRendererFeature
 		// NOTE: This method is part of the compatibility rendering path, please use the Render Graph API above instead.
 		// This method is called before executing the render pass.
 		// It can be used to configure render targets and their clear state. Also to create temporary render target textures.
-		// When empty this render pass will render to the active camera render target.
+		// When empty this render pass will render to the active targetCamera render target.
 		// You should never call CommandBuffer.SetRenderTarget. Instead call <c>ConfigureTarget</c> and <c>ConfigureClear</c>.
 		// The render pipeline will ensure target setup and clearing happens in a performant manner.
 		[System.Obsolete]

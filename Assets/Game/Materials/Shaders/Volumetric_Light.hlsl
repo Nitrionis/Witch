@@ -29,7 +29,7 @@ VertexOutput vert(VertexInput i)
 	OUT.positionCS = TransformObjectToHClip(i.positionOS.xyz);
 	OUT.positionWS = TransformObjectToWorld(i.positionOS.xyz);
 	OUT.eyeDepth = -TransformWorldToView(OUT.positionWS).z;
-	OUT.normalOSx = i.normalOS.x;
+	OUT.normalOSx = i.normalOS.x;	
 	return OUT;
 }
 
@@ -87,24 +87,14 @@ half4 frag(VertexOutput IN) : SV_Target
 	float dist = distance(cpa.pointA, cpa.pointB);
 	float intersectionFactor = 1.0 - smoothstep(fullContactDistance, contactDistance, dist);
 	
-	//intersectionFactor *= 1.0 - min(1.0, (distance(_CapsulePointA, rayStartPointWS) / 20.0));
-	
-	//intersectionFactor *= 1.0 - (-TransformWorldToView(cpa.pointB).z / 20.0);
 	intersectionFactor *= 1.0 - min(1.0, (distance(_CapsulePointA, rayStartPointWS) / 20.0));
 	
 	intersectionFactor *= 1.0 - 0.4 * smoothstep(0.0, capsuleRadius, dist);
-	//intersectionFactor *= 1.0 - 0.8 * smoothstep(0.0, capsuleRadius, dist);
-	
-	//intersectionFactor *= 1.0 - 0.7 * cpa.relativeB;
-	//intersectionFactor *= 1.0 - 0.99 * cpa.relativeB;
 	float f = 0.1 + 0.9 * IN.normalOSx;
-	//intersectionFactor *= f * f * f;
 	
 	intersectionFactor *= smoothstep(0.2, 0.8, IN.positionWS.y);
 	
 	intersectionFactor /= 5;
 	
-	//return half4((1.0 / 25.0).rrr, 1.0);
 	return half4(intersectionFactor, intersectionFactor, intersectionFactor, 1.0);
-	//return half4(intersectionFactor, intersectionFactor, intersectionFactor, intersectionFactor);
 }

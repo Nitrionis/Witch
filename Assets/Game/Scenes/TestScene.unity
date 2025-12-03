@@ -1941,6 +1941,22 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 576536431302804821, guid: d9b979ddcd135804a9d70cf9046bd071, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1.15
+      objectReference: {fileID: 0}
+    - target: {fileID: 576536431302804821, guid: d9b979ddcd135804a9d70cf9046bd071, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1.15
+      objectReference: {fileID: 0}
+    - target: {fileID: 1346876077492650584, guid: d9b979ddcd135804a9d70cf9046bd071, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1.15
+      objectReference: {fileID: 0}
+    - target: {fileID: 1346876077492650584, guid: d9b979ddcd135804a9d70cf9046bd071, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1.15
+      objectReference: {fileID: 0}
     - target: {fileID: 7209684725027106808, guid: d9b979ddcd135804a9d70cf9046bd071, type: 3}
       propertyPath: m_Name
       value: player

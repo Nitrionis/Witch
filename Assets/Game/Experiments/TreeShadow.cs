@@ -91,7 +91,7 @@ public class TreeShadow : MonoBehaviour
 		}
 	}
 
-	/*private void DrawShadowsBBox()
+	private void DrawShadowsBBox()
 	{
 
 		var p1 = center + Vector3.up * (float)y1;
@@ -138,7 +138,7 @@ public class TreeShadow : MonoBehaviour
 			Debug.DrawLine(a4, b4, color, 0);
 
 		}
-	}*/
+	}
 
 	private void DrawBounds(Bounds b, float delay = 0)
 	{

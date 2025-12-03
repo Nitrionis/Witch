@@ -5,7 +5,7 @@ using UnityEngine;
 /// That asset has no copyright or license info in its readme and modifications are encouraged
 /// Modified by: Beard or Die
 /// Date: 2018-01-12
-/// GOAL: A quick camera controller for debugging 3D scenes
+/// GOAL: A quick targetCamera controller for debugging 3D scenes
 /// Flexible enough for FPS-style movement, or Unity Editor-style movement (default)
 /// Probably not suitable for production
 /// </summary>

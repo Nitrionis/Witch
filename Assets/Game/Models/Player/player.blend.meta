@@ -7,6 +7,11 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: Amber_-_Hair
+    second: {fileID: 2100000, guid: 0dfa78a1f0ad50340b18ff12782a6473, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: Body Skin
     second: {fileID: 2100000, guid: 08770b2fff5495049b41af463c8fbaf6, type: 2}
   materials:
