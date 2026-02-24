@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
-using Assets.Game.Terrain;
+using Game.Terrain;
 using Unity.Collections;
 using UnityEngine;
 

@@ -277,27 +277,6 @@ public class VolumetricLightAndGlow : ScriptableRendererFeature
 		}
 
 		// NOTE: This method is part of the compatibility rendering path, please use the Render Graph API above instead.
-		// This method is called before executing the render pass.
-		// It can be used to configure render targets and their clear state. Also to create temporary render target textures.
-		// When empty this render pass will render to the active targetCamera render target.
-		// You should never call CommandBuffer.SetRenderTarget. Instead call <c>ConfigureTarget</c> and <c>ConfigureClear</c>.
-		// The render pipeline will ensure target setup and clearing happens in a performant manner.
-		[System.Obsolete]
-		public override void OnCameraSetup(CommandBuffer cmd, ref RenderingData renderingData)
-		{
-		}
-
-		// NOTE: This method is part of the compatibility rendering path, please use the Render Graph API above instead.
-		// Here you can implement the rendering logic.
-		// Use <c>ScriptableRenderContext</c> to issue drawing commands or execute command buffers
-		// https://docs.unity3d.com/ScriptReference/Rendering.ScriptableRenderContext.html
-		// You don't have to call ScriptableRenderContext.submit, the render pipeline will call it at specific points in the pipeline.
-		[System.Obsolete]
-		public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
-		{
-		}
-
-		// NOTE: This method is part of the compatibility rendering path, please use the Render Graph API above instead.
 		// Cleanup any allocated resources that were created during the execution of this render pass.
 		public override void OnCameraCleanup(CommandBuffer cmd)
 		{

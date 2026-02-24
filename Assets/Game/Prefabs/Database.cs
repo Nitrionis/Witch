@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Assets.Game.Prefabs
+namespace Game.Prefabs
 {
 	[CreateAssetMenu(fileName = "Database", menuName = "Scriptable Objects/Database")]
 	public class Database : ScriptableObject

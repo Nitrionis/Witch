@@ -1,9 +1,9 @@
 ﻿using NUnit.Framework;
 using SimpleInjector;
-using Assets.Game;
-using Assets.Game.ClientServer;
-using Assets.Game.ClientServer.CommandProcessors;
-using Assets.Game.Collections;
+using Game;
+using Game.ClientServer;
+using Game.ClientServer.CommandProcessors;
+using Game.Collections;
 
 namespace Tests
 {

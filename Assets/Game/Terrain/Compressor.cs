@@ -1,7 +1,7 @@
 ﻿using System;
 using Unity.Collections;
 
-namespace Assets.Game.Terrain
+namespace Game.Terrain
 {
 	internal static class Compressor
 	{

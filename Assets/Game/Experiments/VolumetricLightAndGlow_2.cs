@@ -3,9 +3,9 @@ using Unity.Collections;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Rendering;
-using Assets.Game.Tools;
+using Game.Tools;
 
-namespace Assets.Game.Experiments
+namespace Game.Experiments
 {
 	public class VolumetricLightAndGlow_2 : MonoBehaviour
 	{
