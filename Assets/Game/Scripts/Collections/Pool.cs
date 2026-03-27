@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Unity.Collections.LowLevel.Unsafe;
 
@@ -11,20 +12,28 @@ namespace Game.Collections
     {
 		private readonly Queue<Pointer<byte>> allocatedBlocks = new();
 		private readonly Queue<SlotInnerView> freeSlots = new();
+		private readonly int itemCountPerAllocation;
 
-		public Slot Acquire()
+		public Pool(int itemCountPerAllocation = 8)
+		{
+			if (itemCountPerAllocation <= 0) {
+				throw new Exception($"Invalid itemCountPerAllocation {itemCountPerAllocation}");
+			}
+			this.itemCountPerAllocation = itemCountPerAllocation;
+		}
+
+		public Slot Rent()
 		{
 			if (freeSlots.TryDequeue(out var slotInnerView)) {
 				return slotInnerView;
 			}
-			const int ItemCountPerAllocation = 8;
 			var memoryBlock = (InnerItem*)UnsafeUtility.Malloc(
-				size: ItemCountPerAllocation * sizeof(InnerItem),
+				size: itemCountPerAllocation * sizeof(InnerItem),
 				alignment: UnsafeUtility.AlignOf<InnerItem>(),
 				allocator: Allocator.Persistent
 			);
-			allocatedBlocks.Enqueue(memoryBlock);
-			for (var i = 1; i < ItemCountPerAllocation; i++) {
+			allocatedBlocks.Enqueue((byte*)memoryBlock);
+			for (var i = 1; i < itemCountPerAllocation; i++) {
 				freeSlots.Enqueue(new SlotInnerView { Version = 0, InnerItem = memoryBlock + i });
 			}
 			return new SlotInnerView { Version = 0, InnerItem = memoryBlock };
@@ -33,6 +42,9 @@ namespace Game.Collections
         public void Release(Slot slot)
         {
 			SlotInnerView slotInnerView = slot;
+			if (slotInnerView.InnerItem is null) {
+				throw new Exception("Releasing an uninitialized slot");
+			}
 			ulong innerVersion = slotInnerView.InnerItem->Version;
 			if (slotInnerView.Version != innerVersion) {
 				throw new Exception("Invaled slot version");
@@ -71,9 +83,22 @@ namespace Game.Collections
 			public readonly ulong Version;
 			private readonly InnerItem* InnerItem;
 
-			public T* ItemPointer => &InnerItem->Item;
+			public readonly bool IsNull
+			{
+				[MethodImpl(MethodImplOptions.AggressiveInlining)]
+				get => InnerItem is null;
+			}
 
-			public static implicit operator T*(Slot slot) => &slot.InnerItem->Item;
+			public T* ItemPointerUnchecked
+			{
+				[MethodImpl(MethodImplOptions.AggressiveInlining)]
+				get => &InnerItem->Item;
+			}
+
+			public T* ItemPointer => InnerItem is not null ? &InnerItem->Item : throw new Exception();
+
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public static implicit operator T*(Slot slot) => slot.ItemPointer;
         }
 	}
 }

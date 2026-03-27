@@ -11,17 +11,15 @@ namespace Game.Storage
 		private ulong unusedFieldForAlignment;
 
 		[FieldOffset(0)]
-		public Repeat2048<byte> CommandsMemory;
+		public Repeat4096<byte> CommandsMemory;
 
 		public struct Metadata : IEquatable<Metadata>
 		{
-			public Address NextPatch;
 			public ushort FreeSpace;
 			public ulong Version;
 
-			public Metadata(Address nextPatch, ushort freeSpace, ulong version)
+			public Metadata(ushort freeSpace, ulong version)
 			{
-				NextPatch = nextPatch;
 				FreeSpace = freeSpace;
 				Version = version;
 			}
@@ -30,51 +28,14 @@ namespace Game.Storage
 				obj is Metadata other && Equals(other);
 
 			public bool Equals(Metadata other) =>
-				NextPatch == other.NextPatch &&
 				FreeSpace == other.FreeSpace &&
 				Version == other.Version;
 
 			public override int GetHashCode() =>
-				HashCode.Combine(NextPatch, FreeSpace, Version);
+				HashCode.Combine(FreeSpace, Version);
 
 			public static bool operator ==(Metadata left, Metadata right) => left.Equals(right);
 			public static bool operator !=(Metadata left, Metadata right) => !left.Equals(right);
-		}
-
-		public readonly struct Address : IEquatable<Address>
-		{
-			public readonly RegionPatches.File.GroupAddress GroupAddress;
-
-			/// <summary>
-			/// Slot index within group.
-			/// </summary>
-			public readonly byte SlotIndexInGroup;
-
-			public bool IsDefault => GroupAddress.IsDefault;
-
-			public Address(ushort regionIndex, byte fileIndex, byte groupIndex, byte patchSlotIndexInGroup)
-            {
-				GroupAddress = new RegionPatches.File.GroupAddress(regionIndex, fileIndex, groupIndex);
-				SlotIndexInGroup = patchSlotIndexInGroup;
-            }
-
-			public Address(RegionPatches.File.GroupAddress groupAddress, byte patchSlotIndexInGroup)
-			{
-				GroupAddress = groupAddress;
-				SlotIndexInGroup = patchSlotIndexInGroup;
-			}
-
-			public override bool Equals(object obj) =>
-				obj is Address other && Equals(other);
-
-			public bool Equals(Address other) =>
-				GroupAddress == other.GroupAddress &&
-				SlotIndexInGroup == other.SlotIndexInGroup;
-
-			public override int GetHashCode() => HashCode.Combine(GroupAddress, SlotIndexInGroup);
-
-			public static bool operator ==(Address left, Address right) => left.Equals(right);
-			public static bool operator !=(Address left, Address right) => !left.Equals(right);
 		}
 
 		public readonly struct CommandId

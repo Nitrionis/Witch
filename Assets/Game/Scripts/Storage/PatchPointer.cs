@@ -11,82 +11,61 @@ namespace Game.Storage
 
 		public readonly bool IsPartOfPatchSlotsGroup;
 
-		public Pool<PatchSlot>.Slot Slot
+		public PatchPointer(Pool<SinglePatch>.Slot slot)
 		{
-			get {
-				if (IsPartOfPatchSlotsGroup) {
-					throw new System.Exception("Invalid slot cast");
-				}
-				return slotsUnion.Slot;
-			} 
-		}
-
-		public PatchesGroupSlotPart SlotsGroupPart
-		{
-			get {
-				if (!IsPartOfPatchSlotsGroup) {
-					throw new System.Exception("Invalid slot cast");
-				}
-				return slotsUnion.SlotsGroupPart;
-			}
-		}
-
-		public PatchPointer(Pool<PatchSlot>.Slot slot)
-		{
-			if (slot.ItemPointer == null) {
-				throw new System.Exception("PatchPointer: null slot is not supported");
-			}
 			slotsUnion = new SlotUnion(slot);
 			IsPartOfPatchSlotsGroup = false;
 		}
 
 		public PatchPointer(PatchesGroupSlotPart patchesGroupSlotPart)
 		{
-			if (patchesGroupSlotPart.Group.ItemPointer == null) {
-				throw new System.Exception("PatchPointer: null slot is not supported");
-			}
 			slotsUnion = new SlotUnion(patchesGroupSlotPart);
 			IsPartOfPatchSlotsGroup = true;
+		}
+
+		public void Release(IPoolsHolder poolsHolder)
+		{
+			if (IsPartOfPatchSlotsGroup) {
+				poolsHolder.PatchGroupsPool.Release(slotsUnion.SlotsGroupPart.Group);
+			} else {
+				poolsHolder.PatchesPool.Release(slotsUnion.Slot);
+			}
 		}
 
 		/// <summary>
 		/// Increases or decreases the number of references to the patch.
 		/// </summary>
-		public void AddReferenceCount(int count)
+		public int AddReferenceCount(int count)
 		{
-			if (IsNull) {
-				throw new System.Exception("Null PatchPointer");
-			}
 			if (IsPartOfPatchSlotsGroup) {
 				PatchesGroupSlotPart part = slotsUnion.SlotsGroupPart;
-				part.Group.ItemPointer->ReferenceCount += count;
+				return part.Group.ItemPointer->ReferenceCount += count;
 			} else {
-				Pool<PatchSlot>.Slot slot = slotsUnion.Slot;
-				slot.ItemPointer->ReferenceCount += count;
+				Pool<SinglePatch>.Slot slot = slotsUnion.Slot;
+				return slot.ItemPointer->ReferenceCount += count;
 			}
 		}
+
+		public int IncrementReferenceCount() => AddReferenceCount(1);
+		public int DecrementReferenceCount () => AddReferenceCount(-1);
 
 		public ChunkPatch* TypedPointer
 		{
 			get {
 				if (IsPartOfPatchSlotsGroup) {
-					PatchesGroupSlotPart part = SlotsGroupPart;
-					var itemPointer = part.Group.ItemPointer;
-					if (itemPointer == null) {
-						return null;
-					}
-					Repeat16<ChunkPatch>* slots = &itemPointer->Slots;
+					PatchesGroupSlotPart part = slotsUnion.SlotsGroupPart;
+					Repeat16<ChunkPatch>* slots = &part.Group.ItemPointer->Slots;
 					return PointerArray.From(slots)[part.SlotIndexInGroup];
 				} else {
-					if (Slot.ItemPointer == null) {
-						return null;
-					}
-					return &Slot.ItemPointer->Patch;
+					return &slotsUnion.Slot.ItemPointer->Patch;
 				}
 			} 
 		}
 
-		public bool IsNull => TypedPointer == null;
+		public bool IsNull
+		{
+			get => IsPartOfPatchSlotsGroup ? slotsUnion.SlotsGroupPart.Group.IsNull : slotsUnion.Slot.IsNull;
+		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static implicit operator ChunkPatch*(PatchPointer patchPointer) => patchPointer.TypedPointer;
@@ -95,12 +74,12 @@ namespace Game.Storage
 		private readonly struct SlotUnion
 		{
 			[FieldOffset(0)]
-			public readonly Pool<PatchSlot>.Slot Slot;
+			public readonly Pool<SinglePatch>.Slot Slot;
 
 			[FieldOffset(0)]
 			public readonly PatchesGroupSlotPart SlotsGroupPart;
 
-			public SlotUnion(Pool<PatchSlot>.Slot slot)
+			public SlotUnion(Pool<SinglePatch>.Slot slot)
 			{
 				SlotsGroupPart = default;
 				Slot = slot;
@@ -112,30 +91,38 @@ namespace Game.Storage
 				SlotsGroupPart = slotsGroupPart;
 			}
 		}
-	}
 
-	internal readonly struct PatchesGroupSlotPart
-	{
-		public readonly byte SlotIndexInGroup;
-		public readonly Pool<PatchesGroup>.Slot Group;
-
-		public PatchesGroupSlotPart(byte slotIndexInGroup, Pool<PatchesGroup>.Slot group)
+		public readonly struct PatchesGroupSlotPart
 		{
-			SlotIndexInGroup = slotIndexInGroup;
-			Group = group;
+			public readonly byte SlotIndexInGroup;
+			public readonly Pool<PatchesGroup>.Slot Group;
+
+			public PatchesGroupSlotPart(byte slotIndexInGroup, Pool<PatchesGroup>.Slot group)
+			{
+				SlotIndexInGroup = slotIndexInGroup;
+				Group = group;
+			}
 		}
-	}
 
-	internal struct PatchSlot
-	{
-		public int ReferenceCount;
-		public ChunkPatch Patch;
-	}
+		public struct SinglePatch
+		{
+			public int ReferenceCount;
+			public ChunkPatch Patch;
+		}
 
-	internal struct PatchesGroup
-	{
-        public ushort SlotStatuses;
-		public int ReferenceCount;
-		public Repeat16<ChunkPatch> Slots;
+		public struct PatchesGroup
+		{
+			public const int PatchCountPerSide = 4;
+
+			public ushort SlotStatuses;
+			public int ReferenceCount;
+			public Repeat16<ChunkPatch> Slots;
+		}
+
+		public interface IPoolsHolder
+		{
+			Pool<SinglePatch> PatchesPool { get; }
+			Pool<PatchesGroup> PatchGroupsPool { get; }
+		}
 	}
 }

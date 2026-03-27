@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace Game
 {
-    internal struct byte2 : IEquatable<byte2>
+    public struct byte2 : IEquatable<byte2>
 	{
 		public const int Size = 2 * sizeof(byte);
 
@@ -35,7 +35,7 @@ namespace Game
 		public static bool operator !=(byte2 left, byte2 right) => !(left == right);
 	}
 
-	internal struct byte3 : IEquatable<byte3>
+	public struct byte3 : IEquatable<byte3>
 	{
 		public const int Size = 3 * sizeof(byte);
 
@@ -73,7 +73,7 @@ namespace Game
 		public static bool operator !=(byte3 left, byte3 right) => !(left == right);
 	}
 
-	internal struct byte4 : IEquatable<byte4>
+	public struct byte4 : IEquatable<byte4>
 	{
 		public const int Size = 4 * sizeof(byte);
 
@@ -111,7 +111,7 @@ namespace Game
 		public static bool operator !=(byte4 left, byte4 right) => !(left == right);
 	}
 
-	internal struct ushort2 : IEquatable<ushort2>
+	public struct ushort2 : IEquatable<ushort2>
 	{
 		public const int Size = 2 * sizeof(ushort);
 

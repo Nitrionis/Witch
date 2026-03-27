@@ -63,17 +63,19 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Game\Scripts\Cheats\CheatManager.cs" />
+    <Compile Include="Assets\Game\Scripts\Collections\RollingGrid.cs" />
+    <Compile Include="Assets\Game\Scripts\Collections\SegmentsChain.cs" />
+    <Compile Include="Assets\Game\Scripts\Storage\RegionChangesCache.cs" />
+    <Compile Include="Assets\Game\Scripts\Storage\ChunkSize.cs" />
+    <Compile Include="Assets\Game\Scripts\Storage\RegionChanges.cs" />
     <Compile Include="Assets\Game\Scripts\Tools\FastNoiseLite.cs" />
     <Compile Include="Assets\Game\Scripts\Storage\Storage.cs" />
     <Compile Include="Assets\Game\Scripts\Collections\Pool.cs" />
-    <Compile Include="Assets\Game\Scripts\Storage\ChunkKey.cs" />
     <Compile Include="Assets\Game\Terrain\NoiseTest\NoiseTest.cs" />
     <Compile Include="Assets\Game\Scripts\WorldGeneration\WorldGenerator.cs" />
-    <Compile Include="Assets\Game\Scripts\Storage\PatchesCollection.cs" />
     <Compile Include="Assets\Game\Scripts\ElementalAura.cs" />
     <Compile Include="Assets\Game\Scripts\Collections\Array2D.cs" />
     <Compile Include="Assets\Game\Experiments\VolumetricLightAndGlow.cs" />
-    <Compile Include="Assets\Game\Scripts\Storage\RegionKey.cs" />
     <Compile Include="Assets\Game\NumericExtension.cs" />
     <Compile Include="Assets\Game\Scripts\Cheats\TerrainHeightGenerator.cs" />
     <Compile Include="Assets\Game\Experiments\RotationTest.cs" />
@@ -89,7 +91,6 @@
     <Compile Include="Assets\Game\Experiments\TreeShadow.cs" />
     <Compile Include="Assets\Game\Scripts\Cheats\IslandGenerator.cs" />
     <Compile Include="Assets\Game\Scripts\Collections\NativeMemoryChain.cs" />
-    <Compile Include="Assets\Game\Scripts\Storage\PatchKey.cs" />
     <Compile Include="Assets\Game\Scripts\World\ChunkLod2.cs" />
     <Compile Include="Assets\Game\Terrain\Compressor.cs" />
     <Compile Include="Assets\Game\Scripts\Storage\FileManager.cs" />
@@ -101,13 +102,11 @@
     <Compile Include="Assets\Game\Scripts\ExtraMath.cs" />
     <Compile Include="Assets\Game\Scripts\GameSessionHolder.cs" />
     <Compile Include="Assets\Game\Scripts\Repeat.cs" />
-    <Compile Include="Assets\Game\Scripts\Storage\RegionPatches.cs" />
     <Compile Include="Assets\Game\Scripts\Tools\MyExtensions.cs" />
     <Compile Include="Assets\Game\Scripts\Storage\ChunkEntityId.cs" />
     <Compile Include="Assets\Game\Scripts\Cheats\Cheats.cs" />
     <Compile Include="Assets\Game\GameSession.cs" />
     <Compile Include="Assets\Game\Experiments\SceneViewCamera3D.cs" />
-    <Compile Include="Assets\Game\Scripts\Int2Key.cs" />
     <Compile Include="Assets\Game\Scripts\Storage\PatchView.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -1311,8 +1310,6 @@
       <Private>False</Private>
     </Reference>
   </ItemGroup>
-  <ItemGroup>
-  </ItemGroup>
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
   <ItemGroup>
     <ProjectCapability Remove="LaunchProfiles" />
@@ -1323,5 +1320,8 @@
     <ProjectCapability Remove="ReferenceManagerCOM" />
     <ProjectCapability Remove="AssemblyReferences" />
     <ProjectCapability Remove="ReferenceManagerAssemblies" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="RegionBasePointer\" />
   </ItemGroup>
 </Project>

@@ -62,66 +62,31 @@ namespace Game.Storage
 		}
 
 		/// <summary>
-		/// Gets main file path for a specific Region.
+		/// Gets file path for a specific patch group.
 		/// </summary>
-		public string GetRegionFilePath(int2 location)
+		public string GetRegionChangesFilePath(RegionChangesLocation regionChangesLocation)
 		{
-			string fileName = $"_x{location.x}_y{location.y}_{RegionFileSuffix}{fileExtension}";
+			string fileName = $"PatchesGroup_x{regionChangesLocation.AxisIndices.x}_y{regionChangesLocation.AxisIndices.y}{fileExtension}";
 			return Path.Combine(regionsDirectory, fileName);
 		}
 
 		/// <summary>
-		/// Gets patch file path for a specific Region.
+		/// Gets main file path for a specific Region.
 		/// </summary>
-		public string GetPatchFilePath(int2 location, byte fileIndex)
+		public string GetRegionBaseFilePath(RegionBaseLocation location)
 		{
-			string fileName = $"_x{location.x}_y{location.y}_L{fileIndex}_{PatchFileSuffix}{fileExtension}";
+			string fileName = $"RegionBase_x{location.AxisIndices.x}_y{location.AxisIndices.y}{fileExtension}";
 			return Path.Combine(regionsDirectory, fileName);
-		}
-
-		public readonly struct RegionFiles
-		{
-			public readonly string PackedRegionFile;
-			public readonly string PatchFile;
-		}
-
-		public List<string> GetRegionFiles(int2 location)
-		{
-			List<string> files = null;
-			var path = GetRegionFilePath(location);
-			if (File.Exists(path)) {
-				files = new List<string> { path };
-			}
-			byte patchLevel = 0;
-			path = GetPatchFilePath(location, patchLevel);
-			while (File.Exists(path)) {
-				files ??= new List<string>();
-				files.Add(path);
-				patchLevel++;
-				path = GetPatchFilePath(location, patchLevel);
-			}
-			return files;
-		}
-
-		public void RemoveAllFilesForRegion(int2 location)
-		{
-			var files = GetRegionFiles(location);
-			if (files == null) {
-				return;
-			}
-			foreach (var file in files) {
-				File.Delete(file);
-			}
 		}
 
 		/// <summary>
 		/// Deletes the world associated with the manager.
 		/// </summary>
-		public void DeleteAllRegions()
+		public void DeleteWorld()
 		{
 			try {
 				if (Directory.Exists(regionsDirectory)) {
-					Directory.Delete(regionsDirectory, true);
+					Directory.Delete(regionsDirectory, recursive: true);
 					Directory.CreateDirectory(regionsDirectory);
 					Debug.Log("Deleted all Region files");
 				}

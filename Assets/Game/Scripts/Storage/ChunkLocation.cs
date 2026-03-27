@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace Game.Storage
 {
-	internal readonly struct ChunkLocation : IEquatable<ChunkLocation>
+	public readonly struct ChunkLocation : IEquatable<ChunkLocation>
 	{
 		/// <summary>
 		/// Chunk index for each axis of the world.
