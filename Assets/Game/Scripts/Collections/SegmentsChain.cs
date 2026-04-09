@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
@@ -177,7 +178,7 @@ namespace Game.Collections
 			}
 		}
 
-		public class Pool
+		public class Pool : IDisposable
 		{
 			private readonly Pool<DataChunk> innerPool;
 
@@ -190,7 +191,7 @@ namespace Game.Collections
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public void Return(Segment<TItems, TItem> segment) => innerPool.Release(segment.slot);
 
-			public void Destroy() => innerPool.Destroy();
+			public void Dispose() => innerPool.Dispose();
 		}
 	}
 }

@@ -204,13 +204,28 @@ namespace Game.Storage
 
 			private LoadTask Tick()
 			{
+				RegionChanges* regionChanges;
+				int chunkCount;
 				var regionInfoCopyOnStack = regionInfo;
 				if (isFirstTick) {
 					isFirstTick = false;
 					var filePath = fileManager.GetRegionChangesFilePath(RegionChangesLocation);
 					if (!File.Exists(filePath)) {
-
-						int i = ;
+						regionChanges = RegionChangesSlot.ItemPointer;
+						chunkCount = regionChanges->Chunks.Length;
+						for (int i = 0; i < chunkCount; i++) {
+							var chunkPatches = PointerArray.From(&regionChanges->Chunks)[i];
+							if (currentPatchIndexInChunk == 0) {
+								*chunkPatches = new ChunkPatches {
+									Version = 0,
+									IsModifed = false,
+									Location = GetChunkLocation(RegionChangesLocation, currentChunkIndex),
+									PatchesChainStart = default
+								};
+							}
+						}
+						IsCompleted = true;
+						return this;
 					}
 					fileStream = new FileStream(
 						filePath,
@@ -237,8 +252,8 @@ namespace Game.Storage
 					patchCountInSlot = 0;
 				}
 
-				var regionChanges = RegionChangesSlot.ItemPointer;
-				int chunkCount = regionChanges->Chunks.Length;
+				regionChanges = RegionChangesSlot.ItemPointer;
+				chunkCount = regionChanges->Chunks.Length;
 				for (; currentChunkIndex < chunkCount; currentChunkIndex++) {
 					var chunkPatches = PointerArray.From(&regionChanges->Chunks)[currentChunkIndex];
 					int patchCount = UnmanagedArray.From(&regionInfoCopyOnStack.PatchCountPefChunk)[currentChunkIndex];

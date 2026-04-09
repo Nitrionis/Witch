@@ -1,6 +1,6 @@
 ﻿namespace Game
 {
-	internal enum ElementalAura
+	internal enum ElementalAura : byte
 	{
 		Oro,
 		Oscuro,

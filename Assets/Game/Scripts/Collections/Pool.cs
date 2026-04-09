@@ -2,15 +2,12 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Unity.Collections.LowLevel.Unsafe;
 
 namespace Game.Collections
 {
-	using Allocator = Unity.Collections.Allocator;
-
-	internal unsafe class Pool<T> where T : unmanaged
+	internal unsafe class Pool<T> : IDisposable where T : unmanaged
     {
-		private readonly Queue<Pointer<byte>> allocatedBlocks = new();
+		private readonly DisposableMemoryBlocks disposableMemoryBlocks = new();
 		private readonly Queue<SlotInnerView> freeSlots = new();
 		private readonly int itemCountPerAllocation;
 
@@ -19,27 +16,25 @@ namespace Game.Collections
 			if (itemCountPerAllocation <= 0) {
 				throw new Exception($"Invalid itemCountPerAllocation {itemCountPerAllocation}");
 			}
-			this.itemCountPerAllocation = itemCountPerAllocation;
 		}
+
+		public void Dispose() => disposableMemoryBlocks.Dispose();
 
 		public Slot Rent()
 		{
 			if (freeSlots.TryDequeue(out var slotInnerView)) {
 				return slotInnerView;
 			}
-			var memoryBlock = (InnerItem*)UnsafeUtility.Malloc(
-				size: itemCountPerAllocation * sizeof(InnerItem),
-				alignment: UnsafeUtility.AlignOf<InnerItem>(),
-				allocator: Allocator.Persistent
-			);
-			allocatedBlocks.Enqueue((byte*)memoryBlock);
+			var memoryBlock =
+				(InnerItem*)Marshal.AllocHGlobal(itemCountPerAllocation * sizeof(InnerItem));
+			disposableMemoryBlocks.Add((IntPtr)memoryBlock);
 			for (var i = 1; i < itemCountPerAllocation; i++) {
 				freeSlots.Enqueue(new SlotInnerView { Version = 0, InnerItem = memoryBlock + i });
 			}
 			return new SlotInnerView { Version = 0, InnerItem = memoryBlock };
 		}
 
-        public void Release(Slot slot)
+		public void Release(Slot slot)
         {
 			SlotInnerView slotInnerView = slot;
 			if (slotInnerView.InnerItem is null) {
@@ -53,13 +48,6 @@ namespace Game.Collections
 			slotInnerView.InnerItem->Version = slotInnerView.Version;
 			freeSlots.Enqueue(slotInnerView);
         }
-
-        public void Destroy()
-		{
-			foreach (var block in allocatedBlocks) {
-				UnsafeUtility.Free(memory: block, Allocator.Persistent);
-			}
-		}
 
 		private struct InnerItem
 		{
