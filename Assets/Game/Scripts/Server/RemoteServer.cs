@@ -1,14 +1,20 @@
 ﻿using Game.Storage;
+using static Game.Storage.Storage;
 
 namespace Game.Server
 {
-	internal class RemoteServer : IServerStorage
+	internal struct RemoteServer
 	{
-		private readonly IClientStorage clientStorage;
+		private ClientSide clientStorage;
 
-		public RemoteServer(IClientStorage clientStorage) => this.clientStorage = clientStorage;
+		public RemoteServer(ClientSide clientStorage) => this.clientStorage = clientStorage;
 
-		void IServerStorage.GetChunkPatches(ChunkPatches expectedPatches)
+		private void GetChunkPatches(ChunkPatches expectedPatches)
+		{
+			throw new System.NotImplementedException();
+		}
+
+		public ServerStorageDelegates GetServerStorageDelegates()
 		{
 			throw new System.NotImplementedException();
 		}

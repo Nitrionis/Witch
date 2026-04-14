@@ -4,24 +4,29 @@ using Game.Storage;
 
 namespace Game.Server
 {
-	internal class MultiPlayerCache : IPlayerCache
+	internal struct MultiPlayerCache
 	{
-		bool IPlayerCache.CanSaveChunk(RegionChangesLocation location)
+		private bool CanSaveChunk(RegionChangesLocation location)
 		{
 			throw new NotImplementedException();
 		}
 
-		bool IPlayerCache.CanSaveChunk(RegionBaseLocation regionBaseLocation)
+		private bool CanSaveChunk(RegionBaseLocation regionBaseLocation)
 		{
 			throw new NotImplementedException();
 		}
 
-		void IPlayerCache.ChunkRecived(RegionChangesLocation location, Pool<RegionChanges>.Slot container)
+		private void ChunkRecived(RegionChangesLocation location, Pool<RegionChanges>.Slot container)
 		{
 			throw new NotImplementedException();
 		}
 
-		void IPlayerCache.ChunkRecived(RegionBaseLocation regionBaseLocation, Pool<RegionBase>.Slot container)
+		private void ChunkRecived(RegionBaseLocation regionBaseLocation, Pool<RegionBase>.Slot container)
+		{
+			throw new NotImplementedException();
+		}
+
+		public PlayerCacheDelegates GetPlayerCacheDelegates()
 		{
 			throw new NotImplementedException();
 		}

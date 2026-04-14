@@ -1,4 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
+using Game.Allocators;
 using Game.Collections;
 
 namespace Game.Storage
@@ -57,7 +58,7 @@ namespace Game.Storage
 			public ChainBuilder(PatchesSegment chainStart) => chainBuilder = new Segment<Repeat8<PatchView>, PatchView>.ChainBuilder(chainStart);
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public void Add(PatchView item, Pool pool) => chainBuilder.Add(item, pool);
+			public void Add(PatchView item, in Pool pool) => chainBuilder.Add(item, in pool.BasePool);
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public bool TryAddNoResize(PatchView item) => chainBuilder.TryAddNoResize(item);
@@ -66,12 +67,18 @@ namespace Game.Storage
 			public void ConnectNextSegment(PatchesSegment segment) => chainBuilder.ConnectNextSegment(segment.Segment);
 		}
 
-		public class Pool : Segment<Repeat8<PatchView>, PatchView>.Pool
+		public readonly struct Pool
 		{
-			public Pool(int itemCountPerAllocation) : base(itemCountPerAllocation) { }
+			public readonly Segment<Repeat8<PatchView>, PatchView>.Pool BasePool;
+
+			public Pool(DisposeList disposeList, in SessionRewindableAllocator poolsAllocator, int itemCountPerAllocation) =>
+				BasePool = new(disposeList, in poolsAllocator, itemCountPerAllocation);
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public new PatchesSegment Rent() => new(base.Rent());
+			public readonly PatchesSegment Rent() => new(BasePool.Rent());
+
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public readonly void Return(Segment<Repeat8<PatchView>, PatchView> segment) => BasePool.Return(segment);
 		}
 	}
 }

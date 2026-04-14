@@ -1,16 +1,22 @@
 ﻿using Game.Storage;
+using static Game.Storage.Storage;
 
 namespace Game.Server
 {
-	internal class LocalServer : IServerStorage
+	internal struct LocalServer
 	{
-		private readonly IClientStorage clientStorage;
+		private ClientSide clientStorage;
 
-		public LocalServer(IClientStorage clientStorage) => this.clientStorage = clientStorage;
+		public LocalServer(ClientSide clientStorage) => this.clientStorage = clientStorage;
 
-		void IServerStorage.GetChunkPatches(ChunkPatches expectedPatches)
+		private void GetChunkPatches(ChunkPatches expectedPatches)
 		{
-			//clientStorage.ChunkRecived(default);
+			throw new System.NotImplementedException();
+		}
+
+		public ServerStorageDelegates GetServerStorageDelegates()
+		{
+			throw new System.NotImplementedException();
 		}
 	}
 }

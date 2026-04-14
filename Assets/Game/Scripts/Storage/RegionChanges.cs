@@ -313,17 +313,19 @@ namespace Game.Storage
 				return this;
 			}
 
-			public void FillBuffers(IPoolsHolder poolsHolder)
+			public void FillBuffers<TPoolsHolder>(TPoolsHolder* poolsHolder)
+				where TPoolsHolder : unmanaged, IPoolsHolder
 			{
 				while (freePatchGroups.Count < 128) {
-					freePatchGroups.Enqueue(poolsHolder.PatchGroupsPool.Rent());
+					freePatchGroups.Enqueue(poolsHolder->PatchGroupsPool.Rent());
 				}
 				while (freeSegments.Count < 256) {
-					freeSegments.Enqueue(poolsHolder.SegmentsPool.Rent());
+					freeSegments.Enqueue(poolsHolder->SegmentsPool.Rent());
 				}
 			}
 
-			public void ResetForReuse(IPoolsHolder poolsHolder)
+			public void ResetForReuse<TPoolsHolder>(TPoolsHolder* poolsHolder)
+				where TPoolsHolder : unmanaged, IPoolsHolder
 			{
 				IsCompleted = false;
 				isFirstTick = true;

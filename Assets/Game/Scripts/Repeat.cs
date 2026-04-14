@@ -69,12 +69,15 @@ namespace Game
 	{
 		private readonly T* pointer;
 		public readonly int Length;
-        public UnmanagedArray(T* pointer, int length)
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public UnmanagedArray(T* pointer, int length)
         {
             this.pointer = pointer;
 			Length = length;
         }
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private readonly T* GetSlot(int slotIndex)
 		{
 			if (slotIndex < 0 || slotIndex >= Length) {
@@ -85,7 +88,9 @@ namespace Game
 
 		public readonly T this[int slotIndex]
         {
-            get => *GetSlot(slotIndex);
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			get => *GetSlot(slotIndex);
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			set => *GetSlot(slotIndex) = value;
 		}
 
@@ -136,6 +141,8 @@ namespace Game
 				Length = sideLength * sideLength;
 			}
 
+
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			private readonly T* GetSlot(int slotIndex)
 			{
 				if (slotIndex < 0 || slotIndex >= Length) {
@@ -146,7 +153,9 @@ namespace Game
 
 			public readonly T this[int slotIndex]
 			{
+				[MethodImpl(MethodImplOptions.AggressiveInlining)]
 				get => *GetSlot(slotIndex);
+				[MethodImpl(MethodImplOptions.AggressiveInlining)]
 				set => *GetSlot(slotIndex) = value;
 			}
 
@@ -218,6 +227,8 @@ namespace Game
 	{
 		private readonly T* pointer;
 		public readonly int Length;
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public PointerArray(T* pointer, int length)
 		{
 			this.pointer = pointer;

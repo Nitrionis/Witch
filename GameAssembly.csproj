@@ -66,10 +66,12 @@
     <Compile Include="Assets\Game\Scripts\Collections\DisposableMemoryBlocks.cs" />
     <Compile Include="Assets\Game\Scripts\Cheats\CheatManager.cs" />
     <Compile Include="Assets\Game\Scripts\Tools\FastNoiseLite.cs" />
+    <Compile Include="Assets\Game\Scripts\Collections\DisposeList.cs" />
     <Compile Include="Assets\Game\Scripts\Storage\Storage.cs" />
     <Compile Include="Assets\Game\Scripts\Server\EventsStream.cs" />
     <Compile Include="Assets\Game\Scripts\Collections\Pool.cs" />
     <Compile Include="Assets\Game\Scripts\Server\MultiPlayerCache.cs" />
+    <Compile Include="Assets\Game\Scripts\Allocators\SessionRewindableAllocator.cs" />
     <Compile Include="Assets\Game\Terrain\NoiseTest\NoiseTest.cs" />
     <Compile Include="Assets\Game\Scripts\Server\LocalServer.cs" />
     <Compile Include="Assets\Game\Scripts\WorldGeneration\WorldGenerator.cs" />
@@ -1315,6 +1317,10 @@
     </Reference>
     <Reference Include="Unity.Entities">
       <HintPath>Library\ScriptAssemblies\Unity.Entities.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Burst">
+      <HintPath>Library\ScriptAssemblies\Unity.Burst.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEditor.UI">

@@ -2,17 +2,17 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using Game.Allocators;
 
 namespace Game.Collections
 {
-
-
 	internal readonly unsafe struct Segment<TItems, TItem>
 		where TItems : unmanaged, IRepeat<TItem>
 		where TItem : unmanaged
 	{
 		private readonly Pool<DataChunk>.Slot slot;
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private Segment(Pool<DataChunk>.Slot slot) => this.slot = slot;
 
 		public readonly bool IsNull
@@ -119,7 +119,7 @@ namespace Game.Collections
 				}
 			}
 
-			public void Add(TItem item, Pool pool)
+			public void Add(TItem item, in Pool pool)
 			{
 				if (last.IsNull) {
 					first = pool.Rent();
@@ -178,20 +178,18 @@ namespace Game.Collections
 			}
 		}
 
-		public class Pool : IDisposable
+		public readonly struct Pool
 		{
-			private readonly Pool<DataChunk> innerPool;
+			private readonly Pool<DataChunk> pool;
 
-			public Pool(int itemCountPerAllocation) => innerPool =
-				new Pool<DataChunk>(itemCountPerAllocation);
-
-			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public Segment<TItems, TItem> Rent() => new Segment<TItems, TItem>(innerPool.Rent());
+			public Pool(DisposeList disposeList, in SessionRewindableAllocator poolsAllocator, int itemCountPerAllocation) =>
+				pool = new Pool<DataChunk>(disposeList, in poolsAllocator, itemCountPerAllocation);
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public void Return(Segment<TItems, TItem> segment) => innerPool.Release(segment.slot);
+			public Segment<TItems, TItem> Rent() => new Segment<TItems, TItem>(pool.Rent());
 
-			public void Dispose() => innerPool.Dispose();
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public void Return(Segment<TItems, TItem> segment) => pool.Release(segment.slot);
 		}
 	}
 }
