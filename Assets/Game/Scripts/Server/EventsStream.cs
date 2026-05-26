@@ -1,164 +1,321 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Threading;
+using AOT;
+using Game.Allocators;
 using Game.Collections;
+using Game.Tools;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 
 namespace Game.Server
 {
-	internal unsafe struct EventsStream
+	internal readonly unsafe struct EventsStream
 	{
 		private const int CommandAlignment = 4;
+		private const byte SkipRestOfBlockCommandId = 0;
 
-		private volatile AllocationBlock* disposeChainFirst;
-		private volatile AllocationBlock* disposeChainLast;
+		private readonly StreamData* data;
 
-		private volatile EventsBlock* freeBlocksChainFirst;
-		private volatile EventsBlock* freeBlocksChainLast;
-
-		private volatile EventsBlock* processingChainFirst;
-		private volatile EventsBlock* processingChainLast;
-
-		private struct AllocationBlock
+		public EventsStream(
+			DisposeList disposeList,
+			SessionRewindableAllocator allocator,
+			int writerCount,
+			NativeArray<Reader.ProcessorMethod> processors
+			)
 		{
-			public volatile AllocationBlock* Next;
-			public Repeat8<EventsBlock> EventBlocks;
+			data = allocator.AllocateArray<StreamData>(length: 1);
+			*data = new StreamData(data, disposeList, allocator, writerCount, processors);
+		}
+
+		private struct StreamData
+		{
+			public NativeQueue<Pointer<EventsBlock>> FreeBlocks;
+			public NativeQueue<Pointer<EventsBlock>> ProcessingQueue;
+
+			public UnmanagedArray<WriterInfo> Writers;
+			public ReaderInfo Reader;
+
+			public readonly SessionRewindableAllocator Allocator;
+
+			public StreamData(
+				StreamData* self,
+				DisposeList disposeList,
+				SessionRewindableAllocator allocator,
+				int writerCount,
+				NativeArray<Reader.ProcessorMethod> processors
+			) {
+				if (!processors.IsCreated)
+					throw new ArgumentException($"{nameof(processors)} is not created");
+				Allocator = allocator;
+				FreeBlocks = new NativeQueue<Pointer<EventsBlock>>(Unity.Collections.Allocator.Persistent);
+				disposeList.Add(FreeBlocks);
+				ProcessingQueue = new NativeQueue<Pointer<EventsBlock>>(Unity.Collections.Allocator.Persistent);
+				disposeList.Add(ProcessingQueue);
+				Writers = new UnmanagedArray<WriterInfo>(
+					allocator.AllocateArray<WriterInfo>(writerCount), writerCount
+				);
+				for (int i = 0; i < Writers.Length; i++) {
+					Writers[i] = new WriterInfo {
+						CurrentBlock = default,
+						DataPointer = null,
+						WritePosition = EventsBlock.DataSize,
+						ProcessingQueueWriter = ProcessingQueue.AsParallelWriter(),
+						FreeBlocksWriter = FreeBlocks.AsParallelWriter()
+					};
+				}
+				Reader = new ReaderInfo {
+					CurrentBlock = default,
+					DataPointer = null,
+					ReadPosition = EventsBlock.DataSize,
+					FreeBlocksWriter = FreeBlocks.AsParallelWriter(),
+					CommandProcessors = processors
+				};
+				if (sizeof(CommandInfo) != 4 || UnsafeUtility.AlignOf<CommandInfo>() != 1) {
+					throw new Exception($"Invalid CommandInfo layout");
+				}
+				if (typeof(ICommand).GetField(nameof(ICommand.Id)).FieldType != typeof(byte))
+					throw new Exception($"ICommand.Id type must be byte");
+				if (processors.Length != byte.MaxValue)
+					throw new Exception($"Invalid {nameof(processors)} legth");
+				var ids = new bool[byte.MaxValue];
+				foreach (var commandType in FindAllCommandStructs()) {
+					var command = (ICommand)Activator.CreateInstance(commandType);
+					if (command.Aligment > 4 || command.Aligment < 4 && command.Size % 4 != 0)
+						throw new Exception($"Invalid Command {commandType.Name} Aligment: {command.Aligment} Size: {command.Size}");
+					if (command.Id == 0)
+						throw new Exception($"Invalid Command {commandType.Name} Id {command.Id}");
+					if (ids[command.Id])
+						throw new Exception($"Non-unique Id {command.Id} Command {commandType.Name}");
+					ids[command.Id] = true;
+				}
+				if (processors[0].Process != null || processors[0].Processor != null)
+					throw new Exception($"processors[0] must be default because reserved");
+
+				var processSkipRestOfBlock =
+					BurstCompiler.CompileFunctionPointer<Reader.ProcessorMethod.ProcessDelegate>(SkipRestOfBlock);
+				processors[0] = new Reader.ProcessorMethod(self, processSkipRestOfBlock);
+
+				var riseErrorMethodPointer =
+					BurstCompiler.CompileFunctionPointer<Reader.ProcessorMethod.ProcessDelegate>(RiseError);
+				for (var i = 1; i < processors.Length; i++) {
+					var p = processors[i];
+					if (p.Process != null && p.Processor != null)
+						continue;
+					if (p.Process == null && p.Processor == null) {
+						processors[i] = new Reader.ProcessorMethod((void*)i, riseErrorMethodPointer);
+					} else {
+						throw new Exception($"Incomplete processor [{i}] initialization");
+					}
+				}
+			}
+
+			[MethodImpl(MethodImplOptions.NoInlining)]
+			public bool TrySwitchToNextReadBlock()
+			{
+				if (!ProcessingQueue.TryDequeue(out var block)) {
+					Reader.ReadPosition = EventsBlock.DataSize;
+					return false;
+				}
+				Reader.ReadPosition = 0;
+				Reader.CurrentBlock = block;
+				Reader.DataPointer = (byte*)block.TypedPointer;
+				return true;
+			}
 		}
 
 		public struct EventsBlock
 		{
-			public const int DataSize = 4096;
-
-			public volatile EventsBlock* Next;
-			public Repeat4096<byte> Data;
+			public const int DataSize = 2048;
+			public Repeat2048<byte> Data;
 		}
 
-		private const int IterationCountToTimeout = 100_000;
+		[BurstCompile]
+		[MonoPInvokeCallback(typeof(Reader.ProcessorMethod.ProcessDelegate))]
+		private static void RiseError(Reader.ProcessorMethod.CallArgs args) =>
+			throw new Exception($"No processor for command {(int)args.Processor}");
 
-		public EventsStream(IEnumerable<ICommandProcessor> commandProcessors, Pool<EventsBlock> pool)
+		[BurstCompile]
+		[MonoPInvokeCallback(typeof(Reader.ProcessorMethod.ProcessDelegate))]
+		private static void SkipRestOfBlock(Reader.ProcessorMethod.CallArgs args) =>
+			((StreamData*)args.Processor)->TrySwitchToNextReadBlock();
+
+		/// <summary>
+		/// Finds all struct types that implement ICommand from non-Unity assemblies
+		/// </summary>
+		public static List<Type> FindAllCommandStructs()
 		{
-			//rareAccessData = new(pool);
-			//readPosition = EventsBlock.DataSize;
-			//writePosition = EventsBlock.DataSize;
-			//var processors = new List<ICommandProcessor>(commandProcessors);
-			//this.commandProcessors = new ICommandProcessor[1 + processors.Count];
-			//foreach (var processor in processors) {
-			//	int processorId = 1 + processor.CommandId;
-			//	if (this.commandProcessors[processorId] != null) {
-			//		throw new Exception($"Duplicate command id: {processor.CommandId}");
-			//	}
-			//	this.commandProcessors[processorId] = processor;
-			//	if (processor.CommandAlignment != 4) {
-			//		throw new Exception($"Unsupported command alignment command id: {processor.CommandId}");
-			//	}
-			//}
-			//if (sizeof(CommandInfo) != 4 || UnsafeUtility.AlignOf<CommandInfo>() != 1) {
-			//	throw new Exception($"Invalid CommandInfo layout");
-			//}
+			var commandTypes = new List<Type>();
+			foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies()) {
+				if (AssemblyTools.IsStandardAssembly(assembly))
+					continue;
+				foreach (var type in assembly.GetTypes()) {
+					if (
+						type.IsValueType &&
+						!type.IsEnum &&
+						typeof(ICommand).IsAssignableFrom(type)
+					) {
+						commandTypes.Add(type);
+					}
+				}
+			}
+			return commandTypes;
 		}
 
-		public struct Writer
+		public struct WriterInfo
 		{
-			private EventsStream* stream;
-			private EventsBlock* writeBlockPtr;
-			private byte* dataPtr;
-			private int writePosition;
+			public Pointer<EventsBlock> CurrentBlock;
+			public byte* DataPointer;
+			public int WritePosition;
+			public NativeQueue<Pointer<EventsBlock>>.ParallelWriter ProcessingQueueWriter;
+			public NativeQueue<Pointer<EventsBlock>>.ParallelWriter FreeBlocksWriter;
+		}
+
+		private struct ReaderInfo
+		{
+			public Pointer<EventsBlock> CurrentBlock;
+			public byte* DataPointer;
+			public int ReadPosition;
+			public NativeQueue<Pointer<EventsBlock>>.ParallelWriter FreeBlocksWriter;
+			public NativeArray<Reader.ProcessorMethod> CommandProcessors;
+		}
+
+		private struct Command<T> where T : unmanaged, ICommand
+		{
+			public CommandInfo CommandInfo;
+			public T Data;
+		}
+
+		public readonly struct Writer
+		{
+			private readonly StreamData* stream;
+			private readonly WriterInfo* writer;
+
+			public Writer(EventsStream* stream, int writerIndex)
+			{
+				this.stream = stream->data;
+				writer = this.stream->Writers.GetSlotPointer(writerIndex);
+			}
 
 			public void Push<T>(T evt) where T : unmanaged, ICommand
 			{
-				if (writePosition + sizeof(CommandInfo) + sizeof(T) >= EventsBlock.DataSize) {
+				var writePosition = writer->WritePosition;
+				if (writePosition + sizeof(Command<T>) > EventsBlock.DataSize) {
 					ConnectNextWriteBlock();
+					writePosition = 0;
 				}
-				*(CommandInfo*)(dataPtr + writePosition) = new CommandInfo {
+				var dataPointer = writer->DataPointer;
+				*(CommandInfo*)(dataPointer + writePosition) = new CommandInfo {
 					CommandId = evt.Id,
 					CommandCount = 1,
 					CommandSize = unchecked((byte)sizeof(T))
 				};
-				writePosition += CommandAlignment;
-				*(T*)(dataPtr + writePosition) = evt;
-				writePosition += sizeof(T);
+				*(T*)(dataPointer + writePosition + sizeof(CommandInfo)) = evt;
+				writer->WritePosition = writePosition + sizeof(Command<T>);
+			}
+
+			public void Flush()
+			{
+				var writePosition = writer->WritePosition;
+				var currentBlock = writer->CurrentBlock;
+				if (
+					writePosition + sizeof(CommandInfo) <= EventsBlock.DataSize &&
+					currentBlock.IsNotNull
+				) {
+					*(CommandInfo*)(writer->DataPointer + writePosition) = new CommandInfo {
+						CommandId = SkipRestOfBlockCommandId,
+						CommandCount = 1,
+						CommandSize = 0
+					};
+				}
+				if (currentBlock.IsNotNull) {
+					stream->ProcessingQueue.Enqueue(currentBlock);
+				}
+				writer->CurrentBlock = default;
+				writer->DataPointer = default;
+				writer->WritePosition = EventsBlock.DataSize;
 			}
 
 			[MethodImpl(MethodImplOptions.NoInlining)]
 			private void ConnectNextWriteBlock()
 			{
-				if (writePosition + sizeof(CommandInfo) <= EventsBlock.DataSize) {
-					*(CommandInfo*)((byte*)&writeBlockPtr->Data + writePosition) = new CommandInfo {
-						CommandId = 0,
-						CommandCount = 1,
-						CommandSize = 0
-					};
+				Flush();
+				if (!stream->FreeBlocks.TryDequeue(out var currentBlock)) {
+					const int itemCountPerAllocation = 8;
+					currentBlock = stream->Allocator.AllocateArray<EventsBlock>(itemCountPerAllocation);
+					for (var i = 1; i < itemCountPerAllocation; i++) {
+						var block = currentBlock.TypedPointer + i;
+						writer->FreeBlocksWriter.Enqueue(block);
+					}
 				}
-				
-				writeBlockPtr = ;
-				writePosition = 0;
+				writer->WritePosition = 0;
+				writer->DataPointer = (byte*)&currentBlock.TypedPointer->Data;
+				writer->CurrentBlock = currentBlock;
 			}
 		}
 
-		public struct Reader
+		public readonly struct Reader
 		{
-			private EventsStream* stream;
-			private EventsBlock* readBlockPtr;
-			private byte* readDataPtr;
-			private int readPosition;
-			private NativeArray<ProcessorMethodPointer> commandProcessors;
+			private readonly StreamData* stream;
 
-			public Reader(NativeArray<ProcessorMethodPointer> commandProcessors) : this()
-			{
-				this.commandProcessors = commandProcessors;
-			}
+			public Reader(EventsStream* stream) => this.stream = stream->data;
 
 			public void Process()
 			{
+				var reader = &stream->Reader;
 				while (true) {
+					var readPosition = reader->ReadPosition;
 					if (readPosition + sizeof(CommandInfo) >= EventsBlock.DataSize) {
-						if (!TryDequeueNextReadBlock()) {
+						if (!stream->TrySwitchToNextReadBlock())
 							return;
-						}
+						readPosition = 0;
 					}
-					var info = *(CommandInfo*)(readDataPtr + readPosition);
-					readPosition += CommandAlignment;
-					var method = commandProcessors[info.CommandId];
-					method.Process(
-						method.Processor,
+					var dataPointer = reader->DataPointer;
+					var info = *(CommandInfo*)(dataPointer + readPosition);
+					readPosition += sizeof(CommandInfo);
+					reader->ReadPosition = readPosition + info.CommandSize * info.CommandCount;
+					var commandProcessor = reader->CommandProcessors[info.CommandId];
+					commandProcessor.Process(new(
+						commandProcessor.Processor,
 						info.CommandCount,
-						readDataPtr + readPosition
-					);
-					readPosition += info.CommandSize * info.CommandCount;
+						dataPointer + readPosition,
+						info.PlayerId
+					));
 				}
 			}
 
-			[MethodImpl(MethodImplOptions.NoInlining)]
-			private bool TryDequeueNextReadBlock()
-			{
-				if (readBlockPtr != null) {
-					EventsBlock* freeLast = stream->freeBlocksChainLast;
-					if (freeLast == null) {
-						var field = (IntPtr*)&stream->freeBlocksChainLast;
-						freeLast = (EventsBlock*)Interlocked.CompareExchange(
-							ref *field, (IntPtr)readBlockPtr, (IntPtr)null
-						);
-
-					}
-
-					readBlockPtr = null;
-				}
-
-
-				readBlockPtr = ;
-				readPosition = 0;
-				return true;
-			}
-
-			public struct ProcessorMethodPointer
+			public struct ProcessorMethod
 			{
 				public void* Processor;
-				public delegate* unmanaged[Cdecl]<void*, int, byte*, void> Process;
+				public delegate* unmanaged[Cdecl]<CallArgs, void> Process;
 
-				public delegate void ProcessDelegate(void* processor, int commandCount, byte* commands);
+				public ProcessorMethod(void* processor, FunctionPointer<ProcessDelegate> process)
+				{
+					if (processor == null || !process.IsCreated)
+						throw new ArgumentException($"processor is null or process is null");
+					Processor = processor;
+					Process = (delegate* unmanaged[Cdecl]<CallArgs, void>)process.Value;
+				}
+
+				public delegate void ProcessDelegate(CallArgs args);
+
+				public struct CallArgs
+				{
+					public void* Processor;
+					public byte CommandCount;
+					public byte* Commands;
+					public byte PlayerId;
+
+					[MethodImpl(MethodImplOptions.AggressiveInlining)]
+					public CallArgs(void* processor, byte commandCount, byte* commands, byte playerId)
+					{
+						Processor = processor;
+						CommandCount = commandCount;
+						Commands = commands;
+						PlayerId = playerId;
+					}
+				}
 			}
 		}
 
@@ -170,145 +327,4 @@ namespace Game.Server
 			public byte PlayerId;
 		}
 	}
-
-
-
-	/*internal unsafe class EventsStream
-	{
-		public const int BlockSize = 4096;
-		private const int CommandAlignment = 4;
-
-		private RareAccessData rareAccessData;
-		private readonly ICommandProcessor[] commandProcessors;
-		
-		private int readPosition;
-		private byte* readBlockPtr;
-		
-		private int writePosition;
-		private byte* writeBlockPtr;
-		
-		public struct EventsBlock
-		{
-			public Repeat4096<byte> Data;
-		}
-
-		private class RareAccessData
-		{
-			public readonly Pool<EventsBlock> pool;
-			public readonly Queue<Pool<EventsBlock>.Slot> processingQueue = new();
-
-			public Pool<EventsBlock>.Slot readBlock;
-			public Pool<EventsBlock>.Slot writeBlock;
-
-			public RareAccessData(Pool<EventsBlock> pool) => this.pool = pool;
-		}
-
-		// TODO pool is unsafe in this context
-		public EventsStream(IEnumerable<ICommandProcessor> commandProcessors, Pool<EventsBlock> pool)
-		{
-			rareAccessData = new(pool);
-			readPosition = BlockSize;
-			writePosition = BlockSize;
-			var processors = new List<ICommandProcessor>(commandProcessors);
-			this.commandProcessors = new ICommandProcessor[1 + processors.Count];
-			foreach (var processor in processors) {
-				int processorId = 1 + processor.CommandId;
-				if (this.commandProcessors[processorId] != null) {
-					throw new Exception($"Duplicate command id: {processor.CommandId}");
-				}
-				this.commandProcessors[processorId] = processor;
-				if (processor.CommandAlignment != 4) {
-					throw new Exception($"Unsupported command alignment command id: {processor.CommandId}");
-				}
-			}
-			if (sizeof(CommandInfo) != 4 || UnsafeUtility.AlignOf<CommandInfo>() != 1) {
-				throw new Exception($"Invalid CommandInfo layout");
-			}
-		}
-
-		public void Process()
-		{
-			while (true) {
-				if (readPosition + sizeof(CommandInfo) >= BlockSize) {
-					if (!TryDequeueNextReadBlock()) {
-						return;
-					}
-				}
-				var info = *(CommandInfo*)(readBlockPtr + readPosition);
-				readPosition += CommandAlignment;
-				commandProcessors[info.CommandId].Process(info.CommandCount, readBlockPtr + readPosition);
-				readPosition += info.CommandSize * info.CommandCount;
-			}
-		}
-
-		[MethodImpl(MethodImplOptions.NoInlining)]
-		private bool TryDequeueNextReadBlock()
-		{
-			if (rareAccessData.processingQueue.TryDequeue(out var block)) {
-				if (readBlockPtr != null) {
-					rareAccessData.pool.Release(rareAccessData.readBlock);
-				}
-				rareAccessData.readBlock = block;
-				readBlockPtr = (byte*)block.ItemPointer;
-				readPosition = 0;
-				return true;
-			}
-			return false;
-		}
-
-		public void Push<T>(T evt) where T : unmanaged, ICommand
-		{
-			if (writePosition + sizeof(CommandInfo) + sizeof(T) >= BlockSize) {
-				ConnectNextWriteBlock();
-			}
-			*(CommandInfo*)(writeBlockPtr + writePosition) = new CommandInfo {
-				CommandId = evt.Id,
-				CommandCount = 1,
-				CommandSize = unchecked((byte)sizeof(T))
-			};
-			writePosition += CommandAlignment;
-			*(T*)(writeBlockPtr + writePosition) = evt;
-			writePosition += sizeof(T);
-		}
-
-		[MethodImpl(MethodImplOptions.NoInlining)]
-		private void ConnectNextWriteBlock()
-		{
-			if (writePosition + sizeof(CommandInfo) <= BlockSize) {
-				*(CommandInfo*)(readBlockPtr + writePosition) = new CommandInfo {
-					CommandId = 0,
-					CommandCount = 1,
-					CommandSize = 0
-				};
-			}
-			rareAccessData.processingQueue.Enqueue(rareAccessData.writeBlock);
-			rareAccessData.writeBlock = rareAccessData.pool.Rent();
-			writeBlockPtr = (byte*)rareAccessData.writeBlock.ItemPointer;
-			writePosition = 0;
-		}
-
-		public void Push(Pool<EventsBlock>.Slot block)
-		{
-			ConnectNextWriteBlock();
-			rareAccessData.processingQueue.Enqueue(block);
-		}
-
-		public Pool<EventsBlock>.Slot RentBlock() => rareAccessData.pool.Rent();
-
-		public void Flush()
-		{
-			if (writePosition == 0) {
-				return;
-			}
-			ConnectNextWriteBlock();
-		}
-
-		private struct CommandInfo
-		{
-			public byte CommandId;
-			public byte CommandCount;
-			public byte CommandSize;
-			public byte FakeFieldForPadding;
-		}
-	}*/
 }

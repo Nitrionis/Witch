@@ -28,6 +28,7 @@ namespace Game.Collections
 		public Slot Rent()
 		{
 			if (freeSlots.TryDequeue(out var slotInnerView)) {
+				slotInnerView.InnerItem->Item = default;
 				return slotInnerView;
 			}
 			var memoryBlock = (InnerItem*)AllocatorManager.Allocate(
@@ -39,6 +40,7 @@ namespace Game.Collections
 			for (var i = 1; i < itemCountPerAllocation; i++) {
 				freeSlots.Enqueue(new SlotInnerView { Version = 0, InnerItem = memoryBlock + i });
 			}
+			memoryBlock->Item = default;
 			return new SlotInnerView { Version = 0, InnerItem = memoryBlock };
 		}
 

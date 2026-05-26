@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
+using Unity.Mathematics;
 
 namespace Game
 {
@@ -138,5 +139,8 @@ namespace Game
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static bool operator !=(ushort2 left, ushort2 right) => !left.Equals(right);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static implicit operator int2(ushort2 d) => new int2(d.x, d.y);
 	}
 }

@@ -10,7 +10,10 @@ namespace Game
 			get => *TypedPointer;
 			set => *TypedPointer = value;
 		}
-        public Pointer(T* value) => TypedPointer = value;
+		public bool IsNull => TypedPointer == null;
+		public bool IsNotNull => TypedPointer != null;
+
+		public Pointer(T* value) => TypedPointer = value;
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static implicit operator T*(Pointer<T> ptr) => ptr.TypedPointer;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -1,5 +1,6 @@
 ﻿
 using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
 
 namespace Game.Allocators
 {
@@ -20,6 +21,21 @@ namespace Game.Allocators
 		}
 
 		public void Dispose() => DisposeRewindableAllocator();
+
+		public unsafe TItem* AllocateArray<TItem>(int length) where TItem : unmanaged
+		{
+			return (TItem*)AllocatorManager.Allocate(
+				ref Allocator,
+				sizeOf: sizeof(TItem),
+				alignOf: UnsafeUtility.AlignOf<TItem>(),
+				items: length
+			);
+		}
+
+		public NativeArray<T> CreateNativeArray<T>(int length, NativeArrayOptions options) where T : unmanaged
+		{
+			return CollectionHelper.CreateNativeArray<T, RewindableAllocator>(length, ref Allocator, options);
+		}
 
 		// Sample code to use rewindable allocator to allocate containers
 		public unsafe void UseRewindableAllocator(out NativeArray<int> nativeArray, out NativeList<int> nativeList, out byte* bytePtr)

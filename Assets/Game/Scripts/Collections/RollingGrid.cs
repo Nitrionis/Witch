@@ -7,8 +7,13 @@ using Unity.Mathematics;
 
 namespace Game.Collections
 {
+	public interface IRollingGridItem
+	{
+		void Release();
+	}
+
 	public readonly unsafe struct RollingGrid<T>
-		where T : unmanaged, RollingGrid<T>.IItem
+		where T : unmanaged, IRollingGridItem
 	{
 		private readonly RollingGridData* data;
 
@@ -42,12 +47,13 @@ namespace Game.Collections
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public readonly bool IsInBounds(int2 position) => data->IsInBounds(position);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public readonly bool TryGet(int2 position, out T item) => data->TryGet(position, out item);
-		
-		public interface IItem
-		{
-			void Release();
-		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public readonly bool TryReplace(int2 position, T item, out T originalItem) => data->TryReplace(position, item, out originalItem);
 
 		private struct RollingGridData
 		{
@@ -68,6 +74,18 @@ namespace Game.Collections
 					items: length
 				);
 				buffer = new UnmanagedArray<T>(bufferDataPtr, length);
+			}
+
+			public readonly bool TryReplace(int2 position, T item, out T originalItem)
+			{
+				originalItem = default;
+				if (IsInBounds(position)) {
+					int index = GetIndex(position.x, position.y);
+					originalItem = buffer[index];
+					buffer[index] = item;
+					return true;
+				}
+				return false;
 			}
 
 			public readonly bool TryGet(int2 position, out T item)
@@ -130,10 +148,16 @@ namespace Game.Collections
 				}
 			}
 
-			private readonly bool IsInBounds(int2 offset)
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public readonly bool IsInBounds(int2 offset)
 			{
-				return this.offset.x <= offset.x && offset.x < this.offset.x + sideLength &&
-					this.offset.y <= offset.y && offset.y < this.offset.y + sideLength;
+				// Cache struct field in a local to avoid repeated field loads.
+				// The JIT often does this anyway, but it's cheap insurance.
+				int2 localOffset = this.offset;
+				uint side = (uint)sideLength;
+
+				return (uint)(offset.x - localOffset.x) < side
+					&& (uint)(offset.y - localOffset.y) < side;
 			}
 
 			private readonly int GetIndex(int x, int y)

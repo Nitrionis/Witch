@@ -35,6 +35,7 @@ namespace Game.Storage
 		/// <summary>
 		/// Increases or decreases the number of references to the patch.
 		/// </summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public int AddReferenceCount(int count)
 		{
 			if (IsPartOfPatchSlotsGroup) {
@@ -46,8 +47,11 @@ namespace Game.Storage
 			}
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public int IncrementReferenceCount() => AddReferenceCount(1);
-		public int DecrementReferenceCount () => AddReferenceCount(-1);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public int DecrementReferenceCount() => AddReferenceCount(-1);
 
 		public ChunkPatch* TypedPointer
 		{
@@ -114,7 +118,6 @@ namespace Game.Storage
 		{
 			public const int PatchCountPerSide = 4;
 
-			public ushort SlotStatuses;
 			public int ReferenceCount;
 			public Repeat16<ChunkPatch> Slots;
 		}

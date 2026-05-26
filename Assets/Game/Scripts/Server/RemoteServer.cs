@@ -5,9 +5,9 @@ namespace Game.Server
 {
 	internal struct RemoteServer
 	{
-		private ClientSide clientStorage;
+		private LocalClient clientStorage;
 
-		public RemoteServer(ClientSide clientStorage) => this.clientStorage = clientStorage;
+		public RemoteServer(LocalClient clientStorage) => this.clientStorage = clientStorage;
 
 		private void GetChunkPatches(ChunkPatches expectedPatches)
 		{

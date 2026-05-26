@@ -5,9 +5,9 @@ namespace Game.Server
 {
 	internal struct LocalServer
 	{
-		private ClientSide clientStorage;
+		private LocalClient clientStorage;
 
-		public LocalServer(ClientSide clientStorage) => this.clientStorage = clientStorage;
+		public LocalServer(LocalClient clientStorage) => this.clientStorage = clientStorage;
 
 		private void GetChunkPatches(ChunkPatches expectedPatches)
 		{

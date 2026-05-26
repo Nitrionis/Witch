@@ -4,7 +4,6 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Game.Collections;
-using Unity.Collections;
 using Unity.Mathematics;
 
 namespace Game.Storage
@@ -22,16 +21,10 @@ namespace Game.Storage
 		public static int BufferSizeForUnpack => sizeof(RegionBase);
 
 		/// <remarks>Non-serializable field</remarks>
-		public ulong PlayerUsageBits;
-
-		/// <summary>
-		/// 1 bit per player
-		/// </summary>
-		/// <remarks>Non-serializable field</remarks>
-		public int ReferenceCount;
+		public UsageBits UsageState;
 
 		/// <remarks>Non-serializable field</remarks>
-		public RegionBaseLocation RegionBaseLocation;
+		public RegionBaseLocation Location;
 
 		public Repeat64<LCG64> LCGs;
 
@@ -49,6 +42,17 @@ namespace Game.Storage
 		/// Biome data for each point in <see cref="Heights"/>.
 		/// </summary>
 		public Repeat513x513<byte> BiomeFlags;
+
+		[Flags]
+		public enum UsageBits : uint
+		{
+			None = 0,
+			Cached = 1 << 0,
+			MeshBuilder = 1 << 2,
+			ObjectPlacer = 1 << 3,
+			NavmeshBuilder = 1 << 4,
+			ChunkVariantBuilder = 1 << 5,
+		}
 
 		public static List<byte> PackRegion(RegionBase* region)
 		{
@@ -178,9 +182,8 @@ namespace Game.Storage
 				}
 				var regionBase = RegionBaseSlot.ItemPointer;
 				UnpackRegion(regionBase, new UnmanagedArray<byte>(buffer, BufferSizeForUnpack));
-				regionBase->PlayerUsageBits = 0;
-				regionBase->ReferenceCount = 0;
-				regionBase->RegionBaseLocation = RegionBaseLocation;
+				regionBase->UsageState = default;
+				regionBase->Location = RegionBaseLocation;
 
 				fileStream.Dispose();
 				fileStream = null;
@@ -189,12 +192,34 @@ namespace Game.Storage
 		}
 	}
 
-	public readonly struct RegionBaseLocation : IEquatable<RegionBaseLocation>
+	internal static class RegionBaseUsageBitsExtensions
+	{
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool HasBits(this RegionBase.UsageBits srcBits, RegionBase.UsageBits targetBits) =>
+			(srcBits & targetBits) == targetBits;
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static void SetBits(this ref RegionBase.UsageBits srcBits, RegionBase.UsageBits targetBits) =>
+			srcBits |= targetBits;
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static void UnsetBits(this ref RegionBase.UsageBits srcBits, RegionBase.UsageBits targetBits) =>
+			srcBits &= ~targetBits;
+	}
+
+	public interface ILoacation
+	{
+		ushort2 AxisIndices { get; }
+	}
+
+	public readonly struct RegionBaseLocation : IEquatable<RegionBaseLocation>, ILoacation
 	{
 		/// <summary>
 		/// Region index for each axis of the world.
 		/// </summary>
 		public readonly ushort2 AxisIndices;
+
+		ushort2 ILoacation.AxisIndices => AxisIndices;
 
 		public RegionBaseLocation(ushort2 axisIndices) => AxisIndices = axisIndices;
 

@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
-using Game.Collections;
-using Unity.Collections;
-using Unity.Burst;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using Game.Allocators;
+using Game.Collections;
+using Unity.Burst;
+using Unity.Collections;
+using Unity.Mathematics;
 
 namespace Game.Storage
 {
@@ -38,158 +39,49 @@ namespace Game.Storage
 		public delegate void GetChunkPatches(IntPtr serverStorage, ChunkPatches expectedPatches);
 	}
 
-	internal readonly unsafe struct PlayerCacheDelegates
+	internal interface IChunkProcessor
 	{
-		private readonly IntPtr playerCache;
-		private readonly IntPtr chunkChangesRecived;
-		private readonly IntPtr chunkBaseRecived;
-		private readonly IntPtr canSaveChunkChanges;
-		private readonly IntPtr canSaveChunkBase;
-
-		public PlayerCacheDelegates(
-			IntPtr playerCache,
-			FunctionPointer<ChunkChangesRecived> chunkChangesRecived,
-			FunctionPointer<ChunkBaseRecived> chunkBaseRecived,
-			FunctionPointer<CanSaveChunkChanges> canSaveChunkChanges,
-			FunctionPointer<CanSaveChunkBase> canSaveChunkBase)
-		{
-			this.playerCache = playerCache;
-			this.chunkChangesRecived = chunkChangesRecived.Value;
-			this.chunkBaseRecived = chunkBaseRecived.Value;
-			this.canSaveChunkChanges = canSaveChunkChanges.Value;
-			this.canSaveChunkBase = canSaveChunkBase.Value;
-			Validate();
-		}
-
-		public void Validate()
-		{
-			if (playerCache == IntPtr.Zero)
-				throw new ArgumentNullException(nameof(playerCache));
-			if (chunkChangesRecived == IntPtr.Zero)
-				throw new ArgumentNullException(nameof(chunkChangesRecived));
-			if (chunkBaseRecived == IntPtr.Zero)
-				throw new ArgumentNullException(nameof(chunkBaseRecived));
-			if (canSaveChunkChanges == IntPtr.Zero)
-				throw new ArgumentNullException(nameof(canSaveChunkChanges));
-			if (canSaveChunkBase == IntPtr.Zero)
-				throw new ArgumentNullException(nameof(canSaveChunkBase));
-		}
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public readonly void InvokeChunkRecived(RegionChangesLocation location, Pool<RegionChanges>.Slot container) =>
-			((delegate* unmanaged[Cdecl]<IntPtr, RegionChangesLocation, Pool<RegionChanges>.Slot, void>)chunkChangesRecived)(playerCache, location, container);
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public readonly void InvokeChunkRecived(RegionBaseLocation location, Pool<RegionBase>.Slot container) =>
-			((delegate* unmanaged[Cdecl]<IntPtr, RegionBaseLocation, Pool<RegionBase>.Slot, void>)chunkBaseRecived)(playerCache, location, container);
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public readonly bool InvokeCanSaveChunk(RegionChangesLocation location) =>
-			((delegate* unmanaged[Cdecl]<IntPtr, RegionChangesLocation, bool>)canSaveChunkChanges)(playerCache, location);
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public readonly bool InvokeCanSaveChunk(RegionBaseLocation location) =>
-			((delegate* unmanaged[Cdecl]<IntPtr, RegionBaseLocation, bool>)canSaveChunkBase)(playerCache, location);
-
-		public delegate void ChunkChangesRecived(
-			IntPtr playerCache,
-			RegionChangesLocation location,
-			Pool<RegionChanges>.Slot container
-		);
-		public delegate void ChunkBaseRecived(
-			IntPtr playerCache,
-			RegionBaseLocation regionBaseLocation,
-			Pool<RegionBase>.Slot container
-		);
-		public delegate bool CanSaveChunkChanges(
-			IntPtr playerCache,
-			RegionChangesLocation location
-		);
-		public delegate bool CanSaveChunkBase(
-			IntPtr playerCache,
-			RegionBaseLocation regionBaseLocation
-		);
+		void ChunkLoadedOrUpdated(Pool<ChunkPatches>.Slot chunkView);
+		void RegionBaseLoaded(RegionBaseLocation location, Pool<RegionBase>.Slot regionBase);
 	}
 
-	internal unsafe readonly struct ChunkProcessorDelegates
-	{
-		private readonly IntPtr chunkLoadedOrUpdated;
-		private readonly IntPtr regionBaseLoaded;
-		private readonly IntPtr chunkProcessor;
-
-		public ChunkProcessorDelegates(
-			IntPtr chunkProcessor,
-			FunctionPointer<ChunkLoadedOrUpdated> chunkLoadedOrUpdated,
-			FunctionPointer<RegionBaseLoaded> regionBaseLoaded)
-		{
-			this.chunkProcessor = chunkProcessor;
-			this.chunkLoadedOrUpdated = chunkLoadedOrUpdated.Value;
-			this.regionBaseLoaded = regionBaseLoaded.Value;
-			Validate();
-		}
-
-		public void Validate()
-		{
-			if (chunkProcessor == IntPtr.Zero)
-				throw new ArgumentNullException(nameof(chunkProcessor));
-			if (chunkLoadedOrUpdated == IntPtr.Zero)
-				throw new ArgumentNullException(nameof(chunkLoadedOrUpdated));
-			if (regionBaseLoaded == IntPtr.Zero)
-				throw new ArgumentNullException(nameof(regionBaseLoaded));
-		}
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public readonly void InvokeChunkLoadedOrUpdated(ChunkPatches chunkView) =>
-			((delegate* unmanaged[Cdecl]<IntPtr, ChunkPatches, void>)chunkLoadedOrUpdated)(chunkProcessor, chunkView);
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public readonly void InvokeRegionBaseLoaded(RegionBaseLocation location, Pool<RegionBase>.Slot regionBase) =>
-			((delegate* unmanaged[Cdecl]<IntPtr, RegionBaseLocation, Pool<RegionBase>.Slot, void>)regionBaseLoaded)(chunkProcessor, location, regionBase);
-
-		public delegate void ChunkLoadedOrUpdated(
-			IntPtr chunkProcessor,
-			ChunkPatches chunkView
-		);
-
-		public delegate void RegionBaseLoaded(
-			IntPtr chunkProcessor,
-			RegionBaseLocation location,
-			Pool<RegionBase>.Slot regionBase
-		);
-	}
-
+	/// <remarks>Access only from <see cref="ThreadNames.MainJob"/></remarks>
 	[BurstCompile]
 	internal unsafe struct Storage :
 		PatchPointer.IPoolsHolder,
 		RegionChanges.LoadTask.IPoolsHolder
 	{
+		private readonly Pool<ChunkPatches> chunkPatchesPool;
 		private readonly Pool<RegionChanges> regionChangesPool;
 		private readonly Pool<RegionBase> regionBasesPool;
-		private readonly Pool<PatchPointer.SinglePatch> patchesPool;
-		private readonly Pool<PatchPointer.PatchesGroup> patchGroupsPool;
-		private readonly PatchesSegment.Pool patchesSegmentsPool;
+		private readonly Pool<PatchPointer.SinglePatch> singlePatchPool;
+		private readonly Pool<PatchPointer.PatchesGroup> patchGroupPool;
+		private readonly ChainSegment<PatchView>.Pool patchesSegmentsPool;
 
 		private NativeHashMap<RegionBaseLocation, Pool<RegionBase>.Slot> bases;
 		private NativeHashMap<RegionChangesLocation, Pool<RegionChanges>.Slot> changes;
-		private NativeQueue<(RegionChangesLocation, Pool<RegionChanges>.Slot)> unloadRegionChangesIntents;
 
-		private NativeQueue<RegionBaseLocation> loadRegionBaseIntents;
-		private NativeQueue<RegionChangesLocation> loadRegionChangesIntents;
+		private NativeList<RegionBaseLocation> loadRegionBaseIntents;
+		private NativeList<RegionChangesLocation> loadRegionChangesIntents;
+		private NativeList<RegionChangesLocation> unloadRegionChangesIntents;
 
-		private readonly ChunkProcessorDelegates chunkProcessor;
-		private readonly ServerStorageDelegates serverStorage;
-		private readonly PlayerCacheDelegates playerCache;
+		private NativeList<Pool<ChunkPatches>.Slot> chunksNotInCache;
+		private NativeList<RegionBaseLocation> regionBasesToRemove;
+		private NativeList<RegionChangesLocation> regionChangesToRemove;
 
-		readonly Pool<PatchPointer.SinglePatch> PatchPointer.IPoolsHolder.PatchesPool => patchesPool;
-		readonly Pool<PatchPointer.PatchesGroup> PatchPointer.IPoolsHolder.PatchGroupsPool => patchGroupsPool;
+		private PlayersCache* playerCache;
 
-		readonly Pool<PatchPointer.PatchesGroup> RegionChanges.LoadTask.IPoolsHolder.PatchGroupsPool => patchGroupsPool;
-		readonly PatchesSegment.Pool RegionChanges.LoadTask.IPoolsHolder.SegmentsPool => patchesSegmentsPool;
+		readonly Pool<PatchPointer.SinglePatch> PatchPointer.IPoolsHolder.PatchesPool => singlePatchPool;
+		readonly Pool<PatchPointer.PatchesGroup> PatchPointer.IPoolsHolder.PatchGroupsPool => patchGroupPool;
 
-		public class ManagedMirror
+		readonly Pool<PatchPointer.PatchesGroup> RegionChanges.LoadTask.IPoolsHolder.PatchGroupsPool => patchGroupPool;
+		readonly ChainSegment<PatchView>.Pool RegionChanges.LoadTask.IPoolsHolder.SegmentsPool => patchesSegmentsPool;
+
+		public class Managed
 		{
 			private readonly Storage* storage;
 			private readonly FileManager fileManager;
+			private readonly IChunkProcessor chunkProcessor;
 
 			private readonly Queue<RegionBase.LoadTask> freeLoadRegionBaseTasks;
 			private readonly List<Task<RegionBase.LoadTask>> loadRegionBaseTasks;
@@ -200,10 +92,13 @@ namespace Game.Storage
 			private readonly Queue<RegionChanges.UnloadTask> freeUnloadRegionChangesTasks;
 			private readonly List<Task<RegionChanges.UnloadTask>> unloadRegionChangesTasks;
 
-			public ManagedMirror(FileManager fileManager, Storage* storage)
+			private bool isSync;
+
+			public Managed(FileManager fileManager, Storage* storage, IChunkProcessor chunkProcessor)
 			{
 				this.fileManager = fileManager;
 				this.storage = storage;
+				this.chunkProcessor = chunkProcessor;
 				freeLoadRegionBaseTasks = new();
 				loadRegionBaseTasks = new();
 				freeLoadRegionChangesTasks = new();
@@ -212,31 +107,29 @@ namespace Game.Storage
 				unloadRegionChangesTasks = new();
 			}
 
-			public void Sync()
+			private void ProcessLoadRegionBaseTasks()
 			{
-				var playerCache = storage->playerCache;
 				var bases = storage->bases;
-				var changes = storage->changes;
-
 				for (int i = loadRegionBaseTasks.Count - 1; i >= 0; i--) {
 					var task = loadRegionBaseTasks[i];
 					if (task.IsCompleted) {
 						var loadTask = task.Result;
 						loadRegionBaseTasks.RemoveAt(i);
 						freeLoadRegionBaseTasks.Enqueue(loadTask);
-						playerCache.InvokeChunkRecived(loadTask.RegionBaseLocation, loadTask.RegionBaseSlot);
-						var regionBase = loadTask.RegionBaseSlot.ItemPointer;
-						if (regionBase->PlayerUsageBits == 0) {
-							storage->ReleaseRegion(loadTask.RegionBaseSlot);
-						} else {
-							bases[loadTask.RegionBaseLocation] = loadTask.RegionBaseSlot;
-							storage->CopyRegionBaseReference(loadTask.RegionBaseSlot);
-						}
+						var (location, slot) =
+							(loadTask.RegionBaseLocation, loadTask.RegionBaseSlot);
+						bases[location] = slot;
+						slot.ItemPointer->UsageState.SetBits(RegionBase.UsageBits.Cached);
+						chunkProcessor.RegionBaseLoaded(location, slot);
 						loadTask.RegionBaseLocation = default;
 						loadTask.RegionBaseSlot = default;
 					}
 				}
+			}
 
+			private void ProcessLoadRegionChangesTasks()
+			{
+				var changes = storage->changes;
 				for (int i = loadRegionChangesTasks.Count - 1; i >= 0; i--) {
 					var task = loadRegionChangesTasks[i];
 					if (task.IsCompleted) {
@@ -244,16 +137,13 @@ namespace Game.Storage
 						if (loadTask.IsCompleted) {
 							loadRegionChangesTasks.RemoveAt(i);
 							freeLoadRegionChangesTasks.Enqueue(loadTask);
-							playerCache.InvokeChunkRecived(loadTask.RegionChangesLocation, loadTask.RegionChangesSlot);
-							var regionChanges = loadTask.RegionChangesSlot.ItemPointer;
-							if (regionChanges->ChunkPlayerUsageBits == 0) {
-								storage->ReleaseRegion(loadTask.RegionChangesLocation, loadTask.RegionChangesSlot);
-							} else {
-								changes[loadTask.RegionChangesLocation] = loadTask.RegionChangesSlot;
-								var chunks = UnmanagedArray.From(&regionChanges->Chunks);
-								foreach (var chunk in chunks) {
-									storage->CopyChunkReference(chunk);
-								}
+							changes[loadTask.RegionChangesLocation] = loadTask.RegionChangesSlot;
+							var chunks = UnmanagedArray.From(
+								&loadTask.RegionChangesSlot.ItemPointer->Chunks
+							);
+							foreach (var chunk in chunks) {
+								chunk.ItemPointer->UsageState.SetBits(ChunkPatches.UsageBits.Cached);
+								chunkProcessor.ChunkLoadedOrUpdated(chunk);
 							}
 							loadTask.RegionChangesSlot = default;
 							loadTask.RegionChangesLocation = default;
@@ -263,248 +153,337 @@ namespace Game.Storage
 						}
 					}
 				}
+			}
 
+			private void ProcessUnloadRegionChangesTasks()
+			{
+				var playerCache = storage->playerCache;
 				for (int i = unloadRegionChangesTasks.Count - 1; i >= 0; i--) {
 					var task = unloadRegionChangesTasks[i];
 					if (task.IsCompleted) {
 						var unloadTask = task.Result;
-						loadRegionChangesTasks.RemoveAt(i);
+						unloadRegionChangesTasks.RemoveAt(i);
 						freeUnloadRegionChangesTasks.Enqueue(unloadTask);
-						var regionChanges = unloadTask.RegionChangesSlot.ItemPointer;
-						int unloadTaskCount = --regionChanges->UnloadTaskCount;
-						if (regionChanges->ChunkPlayerUsageBits == 0 && unloadTaskCount == 0) {
-							storage->ReleaseRegion(unloadTask.RegionChangesLocation, unloadTask.RegionChangesSlot);
+						var slot = storage->changes[unloadTask.RegionChangesLocation];
+						slot.ItemPointer->UnloadTaskCount--;
+					}
+				}
+			}
+
+			private int GetNearestLocationToPlayer<T>(
+					NativeList<T> locations,
+					UnmanagedArray<T> playerPositions
+				) where T : unmanaged, ILoacation
+			{
+				int bestMatchIndex = 0;
+				float minDistancesq = float.MaxValue;
+				for (int i = locations.Count - 1; i >= 0; i--) {
+					var location = locations[i];
+					for (int playerIndex = 0; playerIndex < playerPositions.Length; playerIndex++) {
+						float distancesq = math.distancesq(
+							(int2)location.AxisIndices, (int2)playerPositions[playerIndex].AxisIndices
+						);
+						if (distancesq < minDistancesq) {
+							minDistancesq = distancesq;
+							bestMatchIndex = i;
 						}
 					}
 				}
-
-				// Start loading or unloading world data.
-				var loadRegionBaseIntents = storage->loadRegionBaseIntents;
-				if (
-					loadRegionBaseTasks.Count == 0
-					&& loadRegionBaseIntents.TryDequeue(out var regionBaseLocation)
-					&& playerCache.InvokeCanSaveChunk(regionBaseLocation)
-				) {
-					if (!freeLoadRegionBaseTasks.TryDequeue(out var task)) {
-						task = new RegionBase.LoadTask(fileManager);
-					}
-					task.RegionBaseLocation = regionBaseLocation;
-					task.RegionBaseSlot = storage->regionBasesPool.Rent();
-					loadRegionBaseTasks.Add(Task.Run(task.ActionDelegate));
-				}
-
-				var loadRegionChangesIntents = storage->loadRegionChangesIntents;
-				if (
-					loadRegionChangesTasks.Count == 0
-					&& loadRegionChangesIntents.TryDequeue(out var regionChangesLocation)
-					&& playerCache.InvokeCanSaveChunk(regionChangesLocation)
-				) {
-					if (!freeLoadRegionChangesTasks.TryDequeue(out var task)) {
-						task = new RegionChanges.LoadTask(fileManager);
-					}
-					task.RegionChangesLocation = regionChangesLocation;
-					task.RegionChangesSlot = storage->regionChangesPool.Rent();
-					loadRegionChangesTasks.Add(Task.Run(task.ActionDelegate));
-				}
-
-				var unloadRegionChangesIntents = storage->unloadRegionChangesIntents;
-				if (
-					unloadRegionChangesTasks.Count == 0
-					&& unloadRegionChangesIntents.TryDequeue(
-						out (RegionChangesLocation Location, Pool<RegionChanges>.Slot Slot) intent
-					)
-					&& intent.Slot.ItemPointer->ChunkPlayerUsageBits == 0
-				) {
-					var regionChanges = intent.Slot.ItemPointer;
-					regionChanges->UnloadTaskCount++;
-					if (!freeUnloadRegionChangesTasks.TryDequeue(out var task)) {
-						task = new RegionChanges.UnloadTask(fileManager);
-					}
-					task.RegionChangesLocation = intent.Location;
-					task.RegionChangesSlot = intent.Slot;
-					unloadRegionChangesTasks.Add(Task.Run(task.ActionDelegate));
-				}
+				return bestMatchIndex;
 			}
-		}
 
-		public readonly struct ClientSide
-		{
-			private readonly Storage* storage;
+			private int GetFarthestLocationToPlayer<T>(
+					NativeList<T> locations,
+					UnmanagedArray<T> playerPositions
+				) where T : unmanaged, ILoacation
+			{
+				int bestMatchIndex = 0;
+				float minDistancesq = float.MaxValue;
+				for (int i = locations.Count - 1; i >= 0; i--) {
+					var location = locations[i];
+					for (int playerIndex = 0; playerIndex < playerPositions.Length; playerIndex++) {
+						float distancesq = math.distancesq(
+							(int2)location.AxisIndices, (int2)playerPositions[playerIndex].AxisIndices
+						);
+						if (distancesq > minDistancesq) {
+							minDistancesq = distancesq;
+							bestMatchIndex = i;
+						}
+					}
+				}
+				return bestMatchIndex;
+			}
 
-			public ClientSide(Storage* storage) => this.storage = storage;
+			private void ProcessLoadRegionBaseIntents()
+			{
+				var loadIntents = storage->loadRegionBaseIntents;
+				if (loadRegionBaseTasks.Count > 0 || loadIntents.Count == 0)
+					return;
+				var playerCache = storage->playerCache;
+				for (int i = loadIntents.Count - 1; i >= 0; i--) {
+					var location = loadIntents[i];
+					if (!playerCache->CanSaveChunks(location)) {
+						loadIntents.RemoveAtSwapBack(i);
+					}
+				}
+				if (loadIntents.Count == 0)
+					return;
+				int bestMatchIndex = GetNearestLocationToPlayer(
+					loadIntents, playerCache->CurrentBasesRegionPerPlayer
+				);
+				if (!freeLoadRegionBaseTasks.TryDequeue(out var task)) {
+					task = new RegionBase.LoadTask(fileManager);
+				}
+				task.RegionBaseLocation = loadIntents[bestMatchIndex];
+				task.RegionBaseSlot = storage->regionBasesPool.Rent();
+				loadRegionBaseTasks.Add(Task.Run(task.ActionDelegate));
+			}
 
-			public void ChunkRecived(ChunkPatches chunkPatches) =>
-				storage->ChunkRecived(chunkPatches);
-			public void CacheReleased(RegionChangesLocation location, Pool<RegionChanges>.Slot container) =>
-				storage->CacheReleased(location, container);
-			public void CacheReleased(RegionBaseLocation location, Pool<RegionBase>.Slot container) =>
-				storage->CacheReleased(location, container);
+			private void ProcessLoadRegionChangesIntents()
+			{
+				var loadIntents = storage->loadRegionChangesIntents;
+				if (loadRegionChangesTasks.Count > 0 || loadIntents.Count == 0) {
+					return;
+				}
+				var playerCache = storage->playerCache;
+				for (int i = loadIntents.Count - 1; i >= 0; i--) {
+					var location = loadIntents[i];
+					if (!playerCache->CanSaveChunks(location)) {
+						loadIntents.RemoveAtSwapBack(i);
+					}
+				}
+				if (loadIntents.Count == 0)
+					return;
+				int bestMatchIndex = GetNearestLocationToPlayer(
+					loadIntents, playerCache->CurrentChangesRegionPerPlayer
+				);
+				if (!freeLoadRegionChangesTasks.TryDequeue(out var task)) {
+					task = new RegionChanges.LoadTask(fileManager);
+				}
+				task.RegionChangesLocation = loadIntents[bestMatchIndex];
+				task.RegionChangesSlot = storage->regionChangesPool.Rent();
+				var chunkPatchesArray =
+					UnmanagedArray.From(&task.RegionChangesSlot.ItemPointer->Chunks);
+				for (int i = 0; i < chunkPatchesArray.Length; i++) {
+					chunkPatchesArray[i] = storage->chunkPatchesPool.Rent();
+				}
+				loadRegionChangesTasks.Add(Task.Run(task.ActionDelegate));
+			}
+
+			private void ProcessUnloadRegionChangesIntents()
+			{
+				var changes = storage->changes;
+				var unloadIntents = storage->unloadRegionChangesIntents;
+				var playerCache = storage->playerCache;
+				for (int i = unloadIntents.Count - 1; i >= 0; i--) {
+					var location = unloadIntents[i];
+					if (playerCache->CanSaveChunks(location)) {
+						unloadIntents.RemoveAtSwapBack(i);
+						var regionChangesPtr = changes[location].ItemPointer;
+						regionChangesPtr->UnloadTaskCount--;
+						regionChangesPtr->IsModified = true;
+					}
+				}
+				if (unloadIntents.Count == 0)
+					return;
+				int bestMatchIndex = GetNearestLocationToPlayer(
+					unloadIntents, playerCache->CurrentChangesRegionPerPlayer
+				);
+				var regionChangesLocation = unloadIntents[bestMatchIndex];
+				var slot = changes[regionChangesLocation];
+				var regionChanges = slot.ItemPointer;
+				if (!freeUnloadRegionChangesTasks.TryDequeue(out var task)) {
+					task = new RegionChanges.UnloadTask(fileManager);
+				}
+				task.RegionChangesLocation = regionChangesLocation;
+				*task.Chunks = regionChanges->Chunks;
+				unloadRegionChangesTasks.Add(Task.Run(task.ActionDelegate));
+			}
+
+			public void Sync()
+			{
+				var playerCache = storage->playerCache;
+				var bases = storage->bases;
+				var changes = storage->changes;
+
+				ProcessLoadRegionBaseTasks();
+				ProcessLoadRegionChangesTasks();
+				ProcessUnloadRegionChangesTasks();
+
+				ProcessLoadRegionBaseIntents();
+				ProcessLoadRegionChangesIntents();
+				ProcessUnloadRegionChangesIntents();
+			}
 		}
 
 		public Storage(
 			FileManager fileManager,
 			SessionRewindableAllocator allocator,
-			DisposeList disposeList,
-			ChunkProcessorDelegates chunkProcessor,
-			ServerStorageDelegates serverStorage,
-			PlayerCacheDelegates playerCache)
+			DisposeList sessionDisposeList,
+			PlayersCache* playerCache)
 		{
-			this.chunkProcessor = chunkProcessor;
-			this.serverStorage = serverStorage;
 			this.playerCache = playerCache;
-			chunkProcessor.Validate();
-			serverStorage.Validate();
-			playerCache.Validate();
 
-			var dl = disposeList;
+			var dl = sessionDisposeList;
 			dl.Add(changes = new(initialCapacity: 128, Allocator.Persistent));
 			dl.Add(bases = new(initialCapacity: 128, Allocator.Persistent));
 
-			regionChangesPool = new(disposeList, allocator);
-			regionBasesPool = new(disposeList, allocator);
-			patchesPool = new(disposeList, allocator, itemCountPerAllocation: 256);
-			patchGroupsPool = new(disposeList, allocator, itemCountPerAllocation: 16);
-			patchesSegmentsPool = new(disposeList, allocator, itemCountPerAllocation: 1024);
+			chunkPatchesPool = new(dl, allocator);
+			regionChangesPool = new(dl, allocator);
+			regionBasesPool = new(dl, allocator);
+			singlePatchPool = new(dl, allocator, itemCountPerAllocation: 256);
+			patchGroupPool = new(dl, allocator, itemCountPerAllocation: 16);
+			patchesSegmentsPool = new(dl, allocator, itemCountPerAllocation: 1024);
 
 			dl.Add(loadRegionBaseIntents = new(Allocator.Persistent));
 			dl.Add(loadRegionChangesIntents = new(Allocator.Persistent));
 			dl.Add(unloadRegionChangesIntents = new(Allocator.Persistent));
+
+			dl.Add(chunksNotInCache = new(Allocator.Persistent));
+			dl.Add(regionBasesToRemove = new(Allocator.Persistent));
+			dl.Add(regionChangesToRemove = new(Allocator.Persistent));
 		}
 
-		public void RequsetRegionChanges(ChunkLocation chunkLocation)
+		public void RequsetRegion(RegionChangesLocation location)
 		{
-			var regionChangesLocation = RegionChangesLocation.From(chunkLocation);
-			if (changes.TryGetValue(regionChangesLocation, out var regionChangesSlot)) {
-				if (regionChangesSlot.IsNull) {
-					return;
-				}
-				int localIndex = RegionChanges.GetLocalChunkIndex(chunkLocation);
-				var chunkPatches = UnmanagedArray.From(
-					&regionChangesSlot.ItemPointerUnchecked->Chunks
-				)[localIndex];
-				chunkProcessor.InvokeChunkLoadedOrUpdated(chunkPatches);
+			if (changes.ContainsKey(location))
 				return;
-			}
-			if (!playerCache.InvokeCanSaveChunk(regionChangesLocation)) {
-				return;
-			}
-			changes[regionChangesLocation] = default;
-			loadRegionChangesIntents.Enqueue(regionChangesLocation);
+			changes[location] = default;
+			loadRegionChangesIntents.Add(location);
 		}
 
-		public void RequsetRegionBase(RegionBaseLocation regionBaseLocation)
+		public void RequsetRegion(RegionBaseLocation location)
 		{
-			if (bases.TryGetValue(regionBaseLocation, out var regionBasePointer)) {
-				if (regionBasePointer.IsNull) {
-					return;
-				}
-				chunkProcessor.InvokeRegionBaseLoaded(regionBaseLocation, regionBasePointer);
+			if (bases.ContainsKey(location))
 				return;
-			}
-			bases[regionBaseLocation] = default;
-			loadRegionBaseIntents.Enqueue(regionBaseLocation);
+			bases[location] = default;
+			loadRegionBaseIntents.Add(location);
 		}
 
-		private void ChunkRecived(ChunkPatches chunkPatches)
-		{
-			if (chunkPatches.PatchesChainStart.Segment.IsNull) {
-				return;
-			}
-			var regionLocation = RegionChangesLocation.From(chunkPatches.Location);
-			if (changes.TryGetValue(regionLocation, out var regionChangesSlot)) {
-				if (regionChangesSlot.IsNull) {
-					ReleaseChunkReference(chunkPatches);
-					return;
-				}
-			} else {
-				ReleaseChunkReference(chunkPatches);
-				return;
-			}
-			var regionChanges = regionChangesSlot.ItemPointerUnchecked;
-			int chunkLocalIndex = RegionChanges.GetLocalChunkIndex(chunkPatches.Location);
-			var curentChunkPatches = PointerArray.From(&regionChanges->Chunks)[chunkLocalIndex];
-			if (!curentChunkPatches->PatchesChainStart.Segment.IsNull) {
-				ReleaseChunkReference(*curentChunkPatches);
-			}
-			CopyChunkReference(chunkPatches);
-			chunkPatches.IsModifed = true;
-			*curentChunkPatches = chunkPatches;
-			chunkProcessor.InvokeChunkLoadedOrUpdated(chunkPatches);
-			playerCache.InvokeChunkRecived(regionLocation, regionChangesSlot);
-			// If the cache rejects a region, mark it for deletion.
-			if (regionChanges->ChunkPlayerUsageBits == 0) {
-				unloadRegionChangesIntents.Enqueue((regionLocation, regionChangesSlot));
-			}
-		}
+		public bool TryGetRegionBase(RegionBaseLocation location, out Pool<RegionBase>.Slot slot) =>
+			bases.TryGetValue(location, out slot);
 
-		private void ReleaseRegion(RegionChangesLocation location, Pool<RegionChanges>.Slot regionChangesSlot)
+		public bool TryGetRegionBase(RegionChangesLocation location, out Pool<RegionChanges>.Slot slot) =>
+			changes.TryGetValue(location, out slot);
+
+		public void ReplaceChunk(ChunkLocation location, ChunkPatches newChunkPatches)
 		{
-			var regionChanges = regionChangesSlot.ItemPointer;
-			if (regionChanges->ChunkPlayerUsageBits != 0 || regionChanges->UnloadTaskCount != 0) {
-				throw new Exception("ReleaseRegion error: ChunkPlayerUsageBits != 0 || regionChanges->UnloadTaskCount != 0");
+			if (newChunkPatches.PatchesChainStart.IsNull)
+				throw new Exception("Receved chunk can't be null");
+			if (newChunkPatches.UsageState != ChunkPatches.UsageBits.None)
+				throw new Exception("Invalid state: chunkPatches already in use");
+			foreach (var patch in newChunkPatches) {
+				patch.Patch.IncrementReferenceCount();
 			}
-			changes.Remove(location);
+			var regionLocation = RegionChangesLocation.From(location);
+			if (!changes.TryGetValue(regionLocation, out var currentChangesSlot)) {
+				throw new Exception("Invalid chunk flow: chunk not in cache.");
+			}
+			var regionChanges = currentChangesSlot.ItemPointer;
+			regionChanges->IsModified = true;
+			int chunkLocalIndex = RegionChanges.GetChunkIndexInsideRegion(location);
 			var chunks = UnmanagedArray.From(&regionChanges->Chunks);
-			foreach (var chunk in chunks) {
-				ReleaseChunkReference(chunk);
+			var slot = chunks[chunkLocalIndex];
+			if (slot.ItemPointer->UsageState == ChunkPatches.UsageBits.Cached) {
+				var chain = slot.ItemPointerUnchecked->PatchesChainStart;
+				if (chain.IsNotNull) {
+					foreach (var view in chain.EnumerateChain()) {
+						if (view.Patch.DecrementReferenceCount() == 0) {
+							view.Patch.Release(this);
+						}
+					}
+					chain.ReleaseChain(patchesSegmentsPool);
+				}
+				chunkPatchesPool.Release(slot);
+			} else {
+				chunksNotInCache.Add(slot);
 			}
-			regionChangesPool.Release(regionChangesSlot);
+			newChunkPatches.UsageState.SetBits(ChunkPatches.UsageBits.Cached);
+			slot = chunkPatchesPool.Rent();
+			*slot.ItemPointer = newChunkPatches;
+			chunks[chunkLocalIndex] = slot;
 		}
 
-		private void ReleaseRegion(Pool<RegionBase>.Slot regionBaseSlot)
+		public void CollectGarbage()
 		{
-			var regionBase = regionBaseSlot.ItemPointer;
-			if (regionBase->PlayerUsageBits != 0 || regionBase->ReferenceCount != 0) {
-				throw new Exception("ReleaseRegion error: ChunkPlayerUsageBits != 0 || regionBase->ReferenceCount != 0");
+			foreach (var slot in chunksNotInCache) {
+				var chunk = slot.ItemPointer;
+				if (chunk->UsageState == ChunkPatches.UsageBits.None) {
+					foreach (var view in *chunk) {
+						if (view.Patch.DecrementReferenceCount() == 0) {
+							view.Patch.Release(this);
+						}
+					}
+					chunk->PatchesChainStart.ReleaseChain(patchesSegmentsPool);
+					chunkPatchesPool.Release(slot);
+				}
 			}
-			bases.Remove(regionBase->RegionBaseLocation);
-			regionBasesPool.Release(regionBaseSlot);
+			foreach (var pair in bases) {
+				var slot = pair.Value;
+				var loacation = pair.Key;
+				var regionBase = slot.ItemPointer;
+				if (
+					!playerCache->CanSaveChunks(loacation) &&
+					regionBase->UsageState == RegionBase.UsageBits.Cached
+				) {
+					regionBasesPool.Release(slot);
+					regionBasesToRemove.Add(loacation);
+				}
+			}
+			foreach (var pair in changes) {
+				var slot = pair.Value;
+				var loacation = pair.Key;
+				var regionChanges = slot.ItemPointer;
+				if (regionChanges->IsModified) {
+					if (regionChanges->UnloadTaskCount != 0)
+						continue;
+					regionChanges->IsModified = false;
+					regionChanges->UnloadTaskCount++;
+					unloadRegionChangesIntents.Add(loacation);
+				}
+				if (regionChanges->UnloadTaskCount != 0)
+					continue;
+				var chunks = UnmanagedArray.From(&regionChanges->Chunks);
+				var mergedFlags = ChunkPatches.UsageBits.None;
+				foreach (var chunk in chunks) {
+					mergedFlags |= chunk.ItemPointer->UsageState;
+				}
+				if (mergedFlags != ChunkPatches.UsageBits.None)
+					continue;
+				foreach (var chunk in chunks) {
+					var chain = chunk.ItemPointer->PatchesChainStart;
+					if (chain.IsNotNull) {
+						foreach (var view in chain.EnumerateChain()) {
+							if (view.Patch.DecrementReferenceCount() == 0) {
+								view.Patch.Release(this);
+							}
+						}
+						chain.ReleaseChain(patchesSegmentsPool);
+					}
+					chunkPatchesPool.Release(chunk);
+				}
+				regionChangesPool.Release(slot);
+				regionChangesToRemove.Add(loacation);
+			}
+			for (int i = regionBasesToRemove.Count; i >= 0; i--) {
+				bases.Remove(regionBasesToRemove[i]);
+			}
+			regionBasesToRemove.Clear();
+			for (int i = regionChangesToRemove.Count; i >= 0; i--) {
+				changes.Remove(regionChangesToRemove[i]);
+			}
+			regionChangesToRemove.Clear();
 		}
 
-		public void CopyChunkReference(ChunkPatches chunkPatches)
+		private void DecrementReferenceCountForeachPatch(Pool<ChunkPatches>.Slot chunkPatches)
 		{
-			chunkPatches.ForEachPatchAddReferenceCount(count: 1);
-		}
-
-		public void ReleaseChunkReference(ChunkPatches chunkPatches)
-		{
-			foreach (var patchView in chunkPatches.PatchesChainStart.EnumerateChain()) {
+			foreach (var patchView in *chunkPatches.ItemPointer) {
 				int referenceCount = patchView.Patch.DecrementReferenceCount();
-				if (referenceCount < 0) {
+				if (referenceCount < 0)
 					throw new Exception($"Invalid patch reference count: {referenceCount}");
-				}
-				if (referenceCount == 0) {
+				if (referenceCount == 0)
 					patchView.Patch.Release(this);
-				}
 			}
-		}
-
-		public void CopyRegionBaseReference(Pool<RegionBase>.Slot regionBaseSlot)
-		{
-			int referenceCount = ++regionBaseSlot.ItemPointer->ReferenceCount;
-			if (referenceCount < 0) {
-				throw new Exception($"Invalid patch reference count: {referenceCount}");
-			}
-		}
-
-		public void ReleaseRegionBaseReference(Pool<RegionBase>.Slot regionBaseSlot)
-		{
-			var regionBase = regionBaseSlot.ItemPointer;
-			regionBase->ReferenceCount--;
-			if (regionBase->PlayerUsageBits != 0 || regionBase->ReferenceCount != 0) {
-				return;
-			}
-			ReleaseRegion(regionBaseSlot);
-		}
-
-		private void CacheReleased(RegionChangesLocation location, Pool<RegionChanges>.Slot regionChangesSlot)
-		{
-			unloadRegionChangesIntents.Enqueue((location, regionChangesSlot));
-		}
-
-		private void CacheReleased(RegionBaseLocation location, Pool<RegionBase>.Slot regionBaseSlot)
-		{
-			ReleaseRegionBaseReference(regionBaseSlot);
 		}
 	}
 }

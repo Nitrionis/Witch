@@ -78,7 +78,7 @@ namespace Game
         }
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private readonly T* GetSlot(int slotIndex)
+		public readonly T* GetSlotPointer(int slotIndex)
 		{
 			if (slotIndex < 0 || slotIndex >= Length) {
 				throw new System.Exception("UnmanagedArray slotIndex is out of range");
@@ -89,9 +89,22 @@ namespace Game
 		public readonly T this[int slotIndex]
         {
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			get => *GetSlot(slotIndex);
+			get => *GetSlotPointer(slotIndex);
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			set => *GetSlot(slotIndex) = value;
+			set => *GetSlotPointer(slotIndex) = value;
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public readonly T GetItemUnsafe(int index) => *(pointer + index);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public readonly void SetItemUnsafe(int index, T value) => *(pointer + index) = value;
+
+		public readonly void Fill(T value)
+		{
+			for (int slotIndex = 0; slotIndex < Length; slotIndex++) {
+				SetItemUnsafe(slotIndex, value);
+			}
 		}
 
 		public Enumerator GetEnumerator() => new Enumerator(this);

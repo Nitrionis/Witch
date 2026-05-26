@@ -1,5 +1,6 @@
 ﻿
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -10,19 +11,42 @@ using static Game.Storage.PatchPointer;
 
 namespace Game.Storage
 {
-	internal struct ChunkPatches
+	internal struct ChunkPatches : IEnumerable<PatchView>
 	{
 		public int Version;
-		public bool IsModifed;
-		public ChunkLocation Location;
-		public PatchesSegment PatchesChainStart;
+		public UsageBits UsageState;
+		public ChainSegment<PatchView> PatchesChainStart;
 
-		public void ForEachPatchAddReferenceCount(int count)
+		public ChainSegment<PatchView>.EnumerableChain.Enumerator GetEnumerator() =>
+			new ChainSegment<PatchView>.EnumerableChain.Enumerator(PatchesChainStart);
+		IEnumerator<PatchView> IEnumerable<PatchView>.GetEnumerator() => GetEnumerator();
+		IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable<PatchView>)this).GetEnumerator();
+
+		[Flags]
+		public enum UsageBits : uint
 		{
-			foreach (var patchView in PatchesChainStart.EnumerateChain()) {
-				patchView.Patch.AddReferenceCount(count);
-			}
+			None = 0,
+			Cached = 1 << 0,
+			MeshBuilder = 1 << 1,
+			ObjectPlacer = 1 << 2,
+			NavmeshBuilder = 1 << 3,
+			ChunkVariantBuilder = 1 << 4,
 		}
+	}
+
+	internal static class ChunkPatchesUsageBitsExtensions
+	{
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool HasBits(this ChunkPatches.UsageBits srcBits, ChunkPatches.UsageBits targetBits) =>
+			(srcBits & targetBits) == targetBits;
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static void SetBits(this ref ChunkPatches.UsageBits srcBits, ChunkPatches.UsageBits targetBits) =>
+			srcBits |= targetBits;
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static void UnsetBits(this ref ChunkPatches.UsageBits srcBits, ChunkPatches.UsageBits targetBits) =>
+			srcBits &= ~targetBits;
 	}
 
 	internal struct RegionChanges
@@ -30,14 +54,12 @@ namespace Game.Storage
 		public const int ChunkCount = 16;
 		public const int ChunkCountPerSide = 4;
 
+		public bool IsModified;
 		public int UnloadTaskCount;
-		/// <summary>
-		/// 1 bit per player
-		/// </summary>
-		public ulong ChunkPlayerUsageBits;
-		public Repeat16<ChunkPatches> Chunks;
+		public RegionChangesLocation Location;
+		public Repeat16<Pool<ChunkPatches>.Slot> Chunks;
 
-		public static int GetLocalChunkIndex(ChunkLocation chunkLocation)
+		public static int GetChunkIndexInsideRegion(ChunkLocation chunkLocation)
 		{
 			int x = chunkLocation.AxisIndices.x % ChunkCountPerSide;
 			int y = chunkLocation.AxisIndices.y % ChunkCountPerSide;
@@ -67,7 +89,8 @@ namespace Game.Storage
 			private readonly byte* metadataBuffer = (byte*)Marshal.AllocHGlobal(MetadataBufferLength);
 
 			public RegionChangesLocation RegionChangesLocation;
-			public Pool<RegionChanges>.Slot RegionChangesSlot;
+			public readonly Repeat16<Pool<ChunkPatches>.Slot>* Chunks =
+				(Repeat16<Pool<ChunkPatches>.Slot>*)Marshal.AllocHGlobal(MetadataBufferLength);
 
 			public readonly Func<UnloadTask> ActionDelegate;
 
@@ -85,14 +108,12 @@ namespace Game.Storage
 				var fileStream = new FileStream(regionFullPath, FileMode.OpenOrCreate);
 				fileStream.Seek(0, SeekOrigin.Begin);
 
-				var regionChanges = RegionChangesSlot.ItemPointer;
-				var chunks = PointerArray.From(&regionChanges->Chunks);
+				var chunks = UnmanagedArray.From(Chunks);
 				var regionInfo = stackalloc RegionInfo[1];
 				var patchCountPefChunk = UnmanagedArray.From(&regionInfo->PatchCountPefChunk);
 				for (int i = 0; i < chunks.Length; i++) {
 					int patchCount = 0;
-					var chunk = chunks[i];
-					foreach (var patch in chunk->PatchesChainStart.EnumerateChain()) {
+					foreach (var patch in *chunks[i].ItemPointer) {
 						patchCount++;
 					}
 					patchCountPefChunk[i] = patchCount;
@@ -120,7 +141,7 @@ namespace Game.Storage
 					fileStream.Write(new Span<byte>(metadataBuffer, padding));
 				}
 				for (int i = 0; i < chunks.Length; i++) {
-					foreach (var patch in chunks[i]->PatchesChainStart.EnumerateChain()) {
+					foreach (var patch in *chunks[i].ItemPointer) {
 						int itemSize = sizeof(ChunkPatch.Metadata);
 						if (localPosition + itemSize > MetadataBufferLength) {
 							padding = MetadataBufferLength - localPosition;
@@ -135,9 +156,8 @@ namespace Game.Storage
 					fileStream.Write(new Span<byte>(metadataBuffer, padding));
 				}
 				for (int i = 0; i < chunks.Length; i++) {
-					var chunk = chunks[i];
-					foreach (var patch in chunk->PatchesChainStart.EnumerateChain()) {
-						fileStream.Write(new Span<byte>(patch.Patch.TypedPointer, sizeof(ChunkPatch)));
+					foreach (var patchView in *chunks[i].ItemPointer) {
+						fileStream.Write(new Span<byte>(patchView.Patch.TypedPointer, sizeof(ChunkPatch)));
 					}
 				}
 				fileStream.Dispose();
@@ -147,6 +167,7 @@ namespace Game.Storage
 			~UnloadTask()
 			{
 				Marshal.FreeHGlobal((IntPtr)metadataBuffer);
+				Marshal.FreeHGlobal((IntPtr)Chunks);
 			}
 		}
 
@@ -156,7 +177,7 @@ namespace Game.Storage
 			private int metadataOffset;
 
 			private readonly Queue<Pool<PatchesGroup>.Slot> freePatchGroups = new();
-			private readonly Queue<PatchesSegment> freeSegments = new();
+			private readonly Queue<ChainSegment<PatchView>> freeSegments = new();
 
 			public bool IsCompleted { get; private set; } = true;
 
@@ -204,24 +225,16 @@ namespace Game.Storage
 
 			private LoadTask Tick()
 			{
-				RegionChanges* regionChanges;
-				int chunkCount;
+				UnmanagedArray<Pool<ChunkPatches>.Slot> chunks;
 				var regionInfoCopyOnStack = regionInfo;
 				if (isFirstTick) {
 					isFirstTick = false;
 					var filePath = fileManager.GetRegionChangesFilePath(RegionChangesLocation);
 					if (!File.Exists(filePath)) {
-						regionChanges = RegionChangesSlot.ItemPointer;
-						chunkCount = regionChanges->Chunks.Length;
-						for (int i = 0; i < chunkCount; i++) {
-							var chunkPatches = PointerArray.From(&regionChanges->Chunks)[i];
+						chunks = UnmanagedArray.From(&RegionChangesSlot.ItemPointer->Chunks);
+						for (int i = 0; i < chunks.Length; i++) {
 							if (currentPatchIndexInChunk == 0) {
-								*chunkPatches = new ChunkPatches {
-									Version = 0,
-									IsModifed = false,
-									Location = GetChunkLocation(RegionChangesLocation, currentChunkIndex),
-									PatchesChainStart = default
-								};
+								*chunks[i].ItemPointer = default;
 							}
 						}
 						IsCompleted = true;
@@ -252,20 +265,16 @@ namespace Game.Storage
 					patchCountInSlot = 0;
 				}
 
-				regionChanges = RegionChangesSlot.ItemPointer;
-				chunkCount = regionChanges->Chunks.Length;
-				for (; currentChunkIndex < chunkCount; currentChunkIndex++) {
-					var chunkPatches = PointerArray.From(&regionChanges->Chunks)[currentChunkIndex];
+				chunks = UnmanagedArray.From(&RegionChangesSlot.ItemPointer->Chunks);
+				for (; currentChunkIndex < chunks.Length; currentChunkIndex++) {
+					var chunkPatches = chunks[currentChunkIndex];
 					int patchCount = UnmanagedArray.From(&regionInfoCopyOnStack.PatchCountPefChunk)[currentChunkIndex];
 					if (currentPatchIndexInChunk == 0) {
-						*chunkPatches = new ChunkPatches {
-							Version = 0,
-							IsModifed = false,
-							Location = GetChunkLocation(RegionChangesLocation, currentChunkIndex),
-							PatchesChainStart = default
-						};
+						*chunkPatches.ItemPointer = default;
 					}
-					var chainBuilder = new PatchesSegment.ChainBuilder(chunkPatches->PatchesChainStart);
+					var chainBuilder = new ChainSegment<PatchView>.ChainBuilder(
+						chunkPatches.ItemPointer->PatchesChainStart
+					);
 					for (; currentPatchIndexInChunk < patchCount; currentPatchIndexInChunk++) {
 						if (currentPatchIndexInSlot >= patchCountInSlot) {
 							if (!freePatchGroups.TryDequeue(out currentGroupSlot)) {
@@ -336,17 +345,19 @@ namespace Game.Storage
 			public interface IPoolsHolder
 			{
 				Pool<PatchesGroup> PatchGroupsPool { get; }
-				PatchesSegment.Pool SegmentsPool { get; }
+				ChainSegment<PatchView>.Pool SegmentsPool { get; }
 			}
 		}
 	}
 
-	public readonly struct RegionChangesLocation : IEquatable<RegionChangesLocation>
+	public readonly struct RegionChangesLocation : IEquatable<RegionChangesLocation>, ILoacation
 	{
 		/// <summary>
 		/// Region index for each axis of the world.
 		/// </summary>
 		public readonly ushort2 AxisIndices;
+
+		ushort2 ILoacation.AxisIndices => AxisIndices;
 
 		public RegionChangesLocation(ushort2 axisIndices) => AxisIndices = axisIndices;
 

@@ -6,19 +6,23 @@ using Game.Allocators;
 
 namespace Game.Collections
 {
-	internal readonly unsafe struct Segment<TItems, TItem>
-		where TItems : unmanaged, IRepeat<TItem>
-		where TItem : unmanaged
+	internal readonly unsafe struct ChainSegment<TItem> where TItem : unmanaged
 	{
 		private readonly Pool<DataChunk>.Slot slot;
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private Segment(Pool<DataChunk>.Slot slot) => this.slot = slot;
+		private ChainSegment(Pool<DataChunk>.Slot slot) => this.slot = slot;
 
 		public readonly bool IsNull
 		{
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			get => slot.IsNull;
+		}
+
+		public readonly bool IsNotNull
+		{
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			get => !slot.IsNull;
 		}
 
 		public void ReleaseChain(Pool pool)
@@ -36,8 +40,8 @@ namespace Game.Collections
 
 		public struct EnumerableChain : IEnumerable<TItem>
 		{
-			public Segment<TItems, TItem> FirstSegment;
-			public EnumerableChain(Segment<TItems, TItem> firstSegment) => FirstSegment = firstSegment;
+			public ChainSegment<TItem> FirstSegment;
+			public EnumerableChain(ChainSegment<TItem> firstSegment) => FirstSegment = firstSegment;
 
 			public Enumerator GetEnumerator() => new Enumerator(FirstSegment);
 			IEnumerator<TItem> IEnumerable<TItem>.GetEnumerator() => GetEnumerator();
@@ -51,7 +55,7 @@ namespace Game.Collections
 				public TItem Current { get; private set; }
 				object IEnumerator.Current => Current;
 
-				public Enumerator(Segment<TItems, TItem> currentSegment) : this()
+				public Enumerator(ChainSegment<TItem> currentSegment) : this()
 				{
 					if (currentSegment.IsNull) {
 						throw new System.Exception("Enumeration of an uninitialized segment");
@@ -90,30 +94,30 @@ namespace Game.Collections
 
 		private struct DataChunk
 		{
-			public Segment<TItems, TItem> Next;
+			public ChainSegment<TItem> Next;
 			public int ItemCount;
-			public TItems Items;
+			public Repeat8<TItem> Items;
 		}
 
 		public struct ChainBuilder
 		{
-			private Segment<TItems, TItem> first;
-			private Segment<TItems, TItem> last;
+			private ChainSegment<TItem> first;
+			private ChainSegment<TItem> last;
 
-			public Segment<TItems, TItem> First => first;
+			public ChainSegment<TItem> First => first;
 
 			/// <summary>
 			/// Allows you to continue a chain from its last element.
 			/// </summary>
 			/// <remarks>The default constructor is also valid.</remarks>
-			public ChainBuilder(Segment<TItems, TItem> chainStart)
+			public ChainBuilder(ChainSegment<TItem> chainStart)
 			{
 				first = chainStart;
 				last = first;
 				if (last.IsNull) {
 					return;
 				}
-				Segment<TItems, TItem> next;
+				ChainSegment<TItem> next;
 				while (!(next = last.slot.ItemPointerUnchecked->Next).IsNull) {
 					last = next;
 				}
@@ -151,7 +155,7 @@ namespace Game.Collections
 				return false;
 			}
 
-			public void ConnectNextSegment(Segment<TItems, TItem> segment)
+			public void ConnectNextSegment(ChainSegment<TItem> segment)
 			{
 				if (last.IsNull) {
 					first = segment;
@@ -186,10 +190,10 @@ namespace Game.Collections
 				pool = new Pool<DataChunk>(disposeList, in poolsAllocator, itemCountPerAllocation);
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public Segment<TItems, TItem> Rent() => new Segment<TItems, TItem>(pool.Rent());
+			public ChainSegment<TItem> Rent() => new ChainSegment<TItem>(pool.Rent());
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public void Return(Segment<TItems, TItem> segment) => pool.Release(segment.slot);
+			public void Return(ChainSegment<TItem> segment) => pool.Release(segment.slot);
 		}
 	}
 }
