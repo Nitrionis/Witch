@@ -118,6 +118,9 @@ namespace Game.Server
 					Reader.ReadPosition = EventsBlock.DataSize;
 					return false;
 				}
+				if (Reader.CurrentBlock.IsNotNull) {
+					Reader.FreeBlocksWriter.Enqueue(Reader.CurrentBlock);
+				}
 				Reader.ReadPosition = 0;
 				Reader.CurrentBlock = block;
 				Reader.DataPointer = (byte*)block.TypedPointer;
@@ -241,7 +244,7 @@ namespace Game.Server
 			private void ConnectNextWriteBlock()
 			{
 				Flush();
-				if (!stream->FreeBlocks.TryDequeue(out var currentBlock)) {
+				if (!stream->FreeBlocks.TryDequeue(out var currentBlock)) { // TODO race condition
 					const int itemCountPerAllocation = 8;
 					currentBlock = stream->Allocator.AllocateArray<EventsBlock>(itemCountPerAllocation);
 					for (var i = 1; i < itemCountPerAllocation; i++) {
