@@ -1,0 +1,29 @@
+---
+description: Witch — Unity 6 cross-platform multiplayer game (project overview)
+alwaysApply: true
+---
+
+# Witch Project
+
+Cross-platform game built on **Unity 6** (6000.x). Multiplayer is assumed in all design decisions.
+
+## World
+
+Open, procedurally generated world. Terrain and static layout come from generation (`Game.WorldGeneration`); runtime mutations are tracked separately (see `world-data` rule).
+
+## Architecture at a Glance
+
+| Concern | Mechanism | Location |
+|---------|-----------|----------|
+| Commands & primitive sync (positions, health, …) | `Game.Server.EventsStream` (bidirectional) | `Assets/Game/Scripts/Server/` |
+| Player input | Client-side processing → movement command to server | Never send raw input to server |
+| World data (terrain, chunk entities) | Separate storage/patch system | `Assets/Game/Scripts/Storage/` |
+| Thread scheduling | `Game.ThreadRules` phases + Unity Jobs/Burst | `Assets/Game/Scripts/ThreadRules.cs` |
+
+Do not conflate EventsStream commands with world-data patches. They serve different purposes and use different transfer paths.
+
+## Code Style
+
+- Match existing conventions in the file being edited (namespaces, `internal` visibility, Burst attributes, unsafe where already used).
+- Prefer extending existing types (`ICommand`, `ThreadRules`, `Storage`) over parallel abstractions.
+- Minimize main-thread work; push computation to Jobs unless Unity API requires the main thread.

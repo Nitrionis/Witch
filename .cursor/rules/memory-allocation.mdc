@@ -1,0 +1,65 @@
+---
+description: Session memory allocation and disposal (SessionRewindableAllocator, DisposeList)
+globs: Assets/Game/**/*.cs
+alwaysApply: false
+---
+
+# Memory Allocation & Disposal
+
+Session-lifetime native memory uses two cooperating types in `Game.Allocators` and `Game.Collections`.
+
+## SessionRewindableAllocator
+
+Use `SessionRewindableAllocator` for memory blocks and structures that live for the entire session:
+
+- Raw buffers via `AllocateArray<T>()`
+- `NativeArray` / `NativeList` created with the allocator handle
+- Pool backing blocks (`Pool<T>`, `SegmentsChain.Pool`, …)
+- Session-scoped structs such as `EventsStream`, `RollingGrid`
+
+Individual blocks allocated through the rewindable allocator are **not** disposed manually — the allocator frees them in bulk at session teardown.
+
+## DisposeList
+
+Use `DisposeList` to release memory and native containers that require explicit disposal:
+
+- Register every `IDisposable` resource with `disposeList.Add(...)` during construction
+- Include the `SessionRewindableAllocator` itself in the list so it is disposed with everything else
+- Pass the same session `DisposeList` into subsystem constructors (`Storage`, `EventsStream`, `Pool<T>`, …)
+
+At session end, dispose the list once; it disposes all registered resources in registration order.
+
+## Main-Thread Construction
+
+Most session structures are built on the main thread during startup. That is what makes `DisposeList` viable — it is a managed type and must only be touched from main-thread construction and teardown code.
+
+Job threads (see `threading-jobs` rule) read and write **pre-allocated** buffers; they do not allocate through `SessionRewindableAllocator` or register with `DisposeList`.
+
+## Pattern
+
+```csharp
+// ✅ Session setup (main thread)
+using var sessionDisposeList = new DisposeList();
+var allocator = new SessionRewindableAllocator(initialBlockSize: 64 * 1024);
+sessionDisposeList.Add(allocator);
+
+var freeBlocks = new NativeQueue<Pointer<EventsBlock>>(Allocator.Persistent);
+sessionDisposeList.Add(freeBlocks);
+
+var storage = new Storage(fileManager, allocator, sessionDisposeList, playerCache);
+var eventsStream = new EventsStream(sessionDisposeList, allocator, writerCount, processors);
+
+// Pool: rewindable blocks + explicit queue disposal
+var pool = new Pool<MyStruct>(sessionDisposeList, allocator);
+
+// ❌ Per-block disposal for session-lifetime rewindable memory
+allocator.AllocateArray<int>(100); // no matching Dispose call needed
+
+// ❌ Native container without registering on DisposeList
+var map = new NativeHashMap<int, int>(128, Allocator.Persistent); // leaks unless Added
+
+// ❌ Using DisposeList from a Job
+[BurstCompile] struct BadJob : IJob {
+    public void Execute() { /* disposeList.Add(...) */ }
+}
+```

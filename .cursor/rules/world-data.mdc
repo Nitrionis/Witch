@@ -1,0 +1,41 @@
+---
+description: Procedural world, base regions, and chunk patches
+globs: Assets/Game/Scripts/{Storage,WorldGeneration,World}/**/*.cs
+alwaysApply: false
+---
+
+# World Data
+
+The world is open and procedurally generated. Runtime world state splits into two layers:
+
+## Base (immutable)
+
+`RegionBase` holds generated, unchangeable data per region: height maps, biome flags, RNG seeds (`LCGs`). Stored as `RegionBase_x*_y*.bin` via `FileManager.GetRegionBaseFilePath`.
+
+Base data is produced offline/at generation time (`Game.WorldGeneration`) and treated as read-only at runtime.
+
+## Patches (mutable)
+
+Player/world mutations are recorded as **patches**:
+
+- `RegionChanges` — groups of patch files per region (`PatchesGroup_x*_y*.bin`)
+- `ChunkPatch` — per-chunk command stream (create/delete entities, height edits, health, …)
+
+Patches layer on top of base data. When loading a chunk, apply base + accumulated patches.
+
+## Transfer Mechanism
+
+World data transfer is **separate from EventsStream**:
+
+- Local persistence: `FileManager`, `Storage`, async `FileIoTask` loads
+- Remote/multiplayer: `ServerStorageDelegates`, `RemoteServer.GetChunkPatches`, `GetServerStorageDelegates`
+
+Do not send terrain or chunk patch payloads through EventsStream.
+
+## Access Patterns
+
+- `Storage` (native, Burst-friendly) — access from `ThreadRules.MainJob` only
+- `Storage.Managed` — disk I/O orchestration from `ThreadRules.SyncPhase`
+- Chunk lifecycle callbacks via `IChunkProcessor.ChunkLoadedOrUpdated` / `RegionBaseLoaded`
+
+When adding world mutations, append to patch command streams (`ChunkPatch` command types), not to `RegionBase`. For chunk versioning, sync, and patch mutation rules, see `world-chunks`.

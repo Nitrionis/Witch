@@ -1,0 +1,59 @@
+---
+description: Chunk composition, versioning, patch sync, and mutation rules
+globs: Assets/Game/Scripts/{Storage,WorldGeneration,World,Server}/**/*.cs
+alwaysApply: false
+---
+
+# World Chunks
+
+See also `world-data` for region base storage, transfer paths, and thread access rules.
+
+## Composition
+
+Every chunk is **immutable base + a chain of patches**:
+
+- **Base** — generated, read-only data from `RegionBase` (height maps, biomes, seeds).
+- **Patches** — `ChunkPatches` holds a `PatchesChainStart` of `ChunkPatch` entries applied in order.
+
+Resolved chunk state = base + accumulated patch commands.
+
+## Versioning
+
+Identity for sync is **two-part**, not version alone:
+
+| Level | Fields | Code |
+|-------|--------|------|
+| Chunk | version + total patch memory | `ChunkPatches.Version` + sum of patch memory |
+| Patch | version + memory footprint | `ChunkPatch.Metadata` (`Version`, memory field) |
+
+**Chunk and patch versions change only when compactified** — not on ordinary edits.
+
+## Sync (remote / multiplayer)
+
+When comparing local chunk state to server (`GetChunkPatches`, `expectedPatches`):
+
+1. **Version matches, memory matches** — chunk is up to date; no download.
+2. **Version matches, memory differs** — download only the missing piece (partial patch data).
+3. **Version differs** — download the full patch chain for the chunk.
+
+Do not re-fetch base data for patch-only updates; base is immutable.
+
+## Patch contents
+
+A `ChunkPatch` is a **sequential command stream** over chunk objects:
+
+- **Create** — e.g. `CreateEntityCommand`, `CreateLootObjectCommand`
+- **Delete** — e.g. `DeleteObjectCommand`
+- **Change** — e.g. `SetHealthCommand`, `SetWorldHeightMapCommand`
+
+Commands are stored in `CommandsMemory` and indexed via `CommandId`.
+
+## Mutation rules
+
+When changing a chunk, **append commands additively**:
+
+- Append to the current patch or add a new patch to the chain.
+- Preserve existing chunk and patch versions.
+- Do not rewrite or compactify as part of normal gameplay mutations.
+
+Compactification is a separate, explicit operation that merges/reclaims patch data and bumps versions.

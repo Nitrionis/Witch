@@ -1,0 +1,44 @@
+---
+description: Thread phases, Jobs, and Burst usage
+globs: Assets/Game/**/*.cs
+alwaysApply: false
+---
+
+# Threading & Jobs
+
+Burst and Unity Jobs are core to this project. Default to off-main-thread execution.
+
+## Main Thread Rule
+
+The main thread (`ThreadRules.MainThread`) is **only** for work that cannot run elsewhere: UnityEngine/MonoBehaviour lifecycle, rendering hooks, managed-only APIs, and sync points that bridge Jobs back to Unity objects.
+
+**Player input** is read and processed on the client main thread. The result (position, direction, speed) is queued as a command for the server — raw input never crosses the network.
+
+Everything else belongs in a `ThreadRules` phase:
+
+- **MainJob** — command-stream processing, server-side entity create/destroy
+- **AiSystemUpdateJob**, **MeshBuilderJob**, **NavmeshBuilderJob** — read/write pre-allocated buffers only
+- **NetworkJob** — network I/O; writes to `EventsStream.Writer` and pre-allocated buffers
+- **SyncPhase** — job start/end synchronization (runs after MainJob syncs with main thread)
+- **FileIoTask** — disk reads into pre-allocated buffers
+
+Respect `<remarks>Access only from ThreadRules.X</remarks>` on types (e.g. `Storage` → MainJob, `Storage.Managed` → SyncPhase).
+
+## Jobs & Burst
+
+- Mark hot paths with `[BurstCompile]`; keep job structs `unmanaged`.
+- Use `NativeArray` / project allocators (`SessionRewindableAllocator`, pools) — avoid managed allocations inside Jobs.
+- Job threads read/write **pre-allocated buffers**, not shared managed state.
+- Schedule work in the appropriate phase; do not bypass `SyncPhase` when cross-phase data is involved.
+
+## Anti-patterns
+
+```csharp
+// ❌ Heavy logic or game-state mutation on main thread
+void Update() { SimulateAllEntities(); }
+
+// ❌ Managed heap allocation inside a Job
+[BurstCompile] struct BadJob : IJob { public void Execute() { new List<int>(); } }
+
+// ✅ Process commands in MainJob, sync via SyncPhase, render on main thread
+```

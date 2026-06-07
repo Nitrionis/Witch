@@ -1,0 +1,59 @@
+---
+description: Server authority and EventsStream command protocol
+globs: Assets/Game/Scripts/Server/**/*.cs
+alwaysApply: false
+---
+
+# Server & EventsStream
+
+Multiplayer is server-authoritative. The **server processes every command**; clients send intent, never apply gameplay mutations directly.
+
+## EventsStream
+
+`Game.Server.EventsStream` is the **bidirectional** channel for:
+
+- Gameplay commands (movement results, abilities, inventory actions)
+- Primitive state sync (entity transforms, health, host assignment, …)
+
+It is **not** used for world data (terrain regions, chunk patches). World data uses `Game.Storage` (see `world-data` rule).
+
+### Writing commands
+
+- Define commands as `unmanaged` structs implementing `ICommand` in `Game.Server.Command` (`Commands.cs`).
+- Each command needs a unique `byte Id`, and must report `Aligment` / `Size` via `UnsafeUtility`.
+- Push via `EventsStream.Writer.Push<T>(cmd)` from the appropriate thread (typically NetworkJob or MainJob); call `Flush()` when a block is complete.
+- Process via `EventsStream.Reader.Process()` on the server (MainJob).
+
+### Adding a new command
+
+1. Add struct to `Command` static class with next available `Id`.
+2. Register a Burst-compatible processor in the command-processor collection (discovered at startup via `FindAllCommandStructs`).
+3. Server validates and executes; results are pushed back through EventsStream to clients.
+
+## Player Input
+
+Raw player input is **never** sent to the server. The client owns input handling end-to-end:
+
+1. **Client** reads input (keyboard, gamepad, touch) and runs local input processing (movement simulation, collision response, etc.).
+2. **Client** derives the player's new state: **position**, **direction**, and **speed**.
+3. **Client** sends that result to the server as a command via `EventsStream` — not the raw input events.
+
+The server receives the movement command, validates it, and applies authoritative state. Other clients receive updates from the server (`SetTransform`, etc.), not from the originating client's raw input.
+
+```csharp
+// ❌ BAD — forwarding raw input
+writer.Push(new RawInputCommand { KeyW = true, MouseDelta = delta });
+
+// ✅ GOOD — client-processed movement result
+writer.Push(new PlayerMovementCommand {
+    Position = newPosition,
+    Direction = facing,
+    Speed = speed
+});
+```
+
+## Authority Rules
+
+- Client → server: processed gameplay commands (movement state, abilities, inventory actions) — never raw input.
+- Server → client: authoritative state updates (`SetTransform`, `SetHealth`, entity lifecycle, …).
+- Never mutate server state from client-side code without a server-processed command.
