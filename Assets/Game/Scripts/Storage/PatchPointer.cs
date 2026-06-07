@@ -40,10 +40,10 @@ namespace Game.Storage
 		{
 			if (IsPartOfPatchSlotsGroup) {
 				PatchesGroupSlotPart part = slotsUnion.SlotsGroupPart;
-				return part.Group.ItemPointer->ReferenceCount += count;
+				return part.Group.Pointer->ReferenceCount += count;
 			} else {
 				Pool<SinglePatch>.Slot slot = slotsUnion.Slot;
-				return slot.ItemPointer->ReferenceCount += count;
+				return slot.Pointer->ReferenceCount += count;
 			}
 		}
 
@@ -58,10 +58,10 @@ namespace Game.Storage
 			get {
 				if (IsPartOfPatchSlotsGroup) {
 					PatchesGroupSlotPart part = slotsUnion.SlotsGroupPart;
-					Repeat16<ChunkPatch>* slots = &part.Group.ItemPointer->Slots;
+					Repeat16<ChunkPatch>* slots = &part.Group.Pointer->Slots;
 					return PointerArray.From(slots)[part.SlotIndexInGroup];
 				} else {
-					return &slotsUnion.Slot.ItemPointer->Patch;
+					return &slotsUnion.Slot.Pointer->Patch;
 				}
 			} 
 		}

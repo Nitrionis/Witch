@@ -13,7 +13,7 @@ namespace Game.Storage
 {
 	internal struct ChunkPatches : IEnumerable<PatchView>
 	{
-		public int Version;
+		public ulong Version; // TODO must be saved
 		public UsageBits UsageState;
 		public ChainSegment<PatchView> PatchesChainStart;
 
@@ -82,6 +82,7 @@ namespace Game.Storage
 			public int TotalPatchCount;
 			public int PatchesOffsetInFile;
 			public Repeat16<int> PatchCountPefChunk;
+			public Repeat16<ulong> ChunkVersions;
 		}
 
 		public unsafe class UnloadTask
@@ -111,12 +112,14 @@ namespace Game.Storage
 				var chunks = UnmanagedArray.From(Chunks);
 				var regionInfo = stackalloc RegionInfo[1];
 				var patchCountPefChunk = UnmanagedArray.From(&regionInfo->PatchCountPefChunk);
+				var chunkVersions = UnmanagedArray.From(&regionInfo->ChunkVersions);
 				for (int i = 0; i < chunks.Length; i++) {
 					int patchCount = 0;
-					foreach (var patch in *chunks[i].ItemPointer) {
+					foreach (var patch in *chunks[i].Pointer) {
 						patchCount++;
 					}
 					patchCountPefChunk[i] = patchCount;
+					chunkVersions[i] = chunks[i].Pointer->Version;
 					regionInfo->TotalPatchCount += patchCount;
 				}
 				int localPosition = sizeof(RegionInfo);
@@ -141,7 +144,7 @@ namespace Game.Storage
 					fileStream.Write(new Span<byte>(metadataBuffer, padding));
 				}
 				for (int i = 0; i < chunks.Length; i++) {
-					foreach (var patch in *chunks[i].ItemPointer) {
+					foreach (var patch in *chunks[i].Pointer) {
 						int itemSize = sizeof(ChunkPatch.Metadata);
 						if (localPosition + itemSize > MetadataBufferLength) {
 							padding = MetadataBufferLength - localPosition;
@@ -156,7 +159,7 @@ namespace Game.Storage
 					fileStream.Write(new Span<byte>(metadataBuffer, padding));
 				}
 				for (int i = 0; i < chunks.Length; i++) {
-					foreach (var patchView in *chunks[i].ItemPointer) {
+					foreach (var patchView in *chunks[i].Pointer) {
 						fileStream.Write(new Span<byte>(patchView.Patch.TypedPointer, sizeof(ChunkPatch)));
 					}
 				}
@@ -182,7 +185,20 @@ namespace Game.Storage
 			public bool IsCompleted { get; private set; } = true;
 
 			public RegionChangesLocation RegionChangesLocation;
-			public Pool<RegionChanges>.Slot RegionChangesSlot;
+			public Pool<RegionChanges>.Slot RegionChangesSlot
+			{
+				get => regionChangesSlot;
+				set
+				{
+					regionChangesSlot = value;
+					var chunkSlots = UnmanagedArray.From(&value.Pointer->Chunks);
+					foreach (var chunkSlot in chunkSlots) {
+						if (chunkSlot.Pointer->PatchesChainStart.IsNotNull) {
+							throw new Exception("Chunk slot patches is not null");
+						}
+					}
+				}
+			}
 
 			public readonly Func<LoadTask> ActionDelegate;
 
@@ -198,6 +214,7 @@ namespace Game.Storage
 			private Pool<PatchesGroup>.Slot currentGroupSlot;
 			private int patchCountInSlot;
 			private int currentPatchIndexInSlot;
+			private Pool<RegionChanges>.Slot regionChangesSlot;
 
 			public LoadTask(FileManager fileManager)
 			{
@@ -225,18 +242,12 @@ namespace Game.Storage
 
 			private LoadTask Tick()
 			{
-				UnmanagedArray<Pool<ChunkPatches>.Slot> chunks;
-				var regionInfoCopyOnStack = regionInfo;
+				var chunkSlots = UnmanagedArray.From(&RegionChangesSlot.Pointer->Chunks);
+				RegionInfo regionInfoCopyOnStack;
 				if (isFirstTick) {
 					isFirstTick = false;
 					var filePath = fileManager.GetRegionChangesFilePath(RegionChangesLocation);
 					if (!File.Exists(filePath)) {
-						chunks = UnmanagedArray.From(&RegionChangesSlot.ItemPointer->Chunks);
-						for (int i = 0; i < chunks.Length; i++) {
-							if (currentPatchIndexInChunk == 0) {
-								*chunks[i].ItemPointer = default;
-							}
-						}
 						IsCompleted = true;
 						return this;
 					}
@@ -263,17 +274,22 @@ namespace Game.Storage
 					patchesStreamOffset = regionInfo.PatchesOffsetInFile;
 					currentPatchIndexInSlot = 0;
 					patchCountInSlot = 0;
+
+					var chunkVersions = UnmanagedArray.From(&regionInfoCopyOnStack.ChunkVersions);
+					for (int i = 0; i < chunkSlots.Length; i++) {
+						chunkSlots[currentChunkIndex].Pointer->Version = chunkVersions[currentChunkIndex];
+					}
 				}
 
-				chunks = UnmanagedArray.From(&RegionChangesSlot.ItemPointer->Chunks);
-				for (; currentChunkIndex < chunks.Length; currentChunkIndex++) {
-					var chunkPatches = chunks[currentChunkIndex];
+				regionInfoCopyOnStack = regionInfo;
+				for (; currentChunkIndex < chunkSlots.Length; currentChunkIndex++) {
+					var chunkPatches = chunkSlots[currentChunkIndex];
 					int patchCount = UnmanagedArray.From(&regionInfoCopyOnStack.PatchCountPefChunk)[currentChunkIndex];
 					if (currentPatchIndexInChunk == 0) {
-						*chunkPatches.ItemPointer = default;
+						*chunkPatches.Pointer = default;
 					}
 					var chainBuilder = new ChainSegment<PatchView>.ChainBuilder(
-						chunkPatches.ItemPointer->PatchesChainStart
+						chunkPatches.Pointer->PatchesChainStart
 					);
 					for (; currentPatchIndexInChunk < patchCount; currentPatchIndexInChunk++) {
 						if (currentPatchIndexInSlot >= patchCountInSlot) {
@@ -284,7 +300,7 @@ namespace Game.Storage
 								fileStream.Position = patchesStreamOffset;
 							}
 							int byteCount = fileStream.Read(new Span<byte>(
-								&currentGroupSlot.ItemPointer->Slots,
+								&currentGroupSlot.Pointer->Slots,
 								sizeof(Repeat16<ChunkPatch>)
 							));
 							if (byteCount % sizeof(ChunkPatch) != 0) {

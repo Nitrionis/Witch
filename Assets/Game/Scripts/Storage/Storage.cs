@@ -45,7 +45,7 @@ namespace Game.Storage
 		void RegionBaseLoaded(RegionBaseLocation location, Pool<RegionBase>.Slot regionBase);
 	}
 
-	/// <remarks>Access only from <see cref="ThreadNames.MainJob"/></remarks>
+	/// <remarks>Access only from <see cref="ThreadRules.MainJob"/></remarks>
 	[BurstCompile]
 	internal unsafe struct Storage :
 		PatchPointer.IPoolsHolder,
@@ -77,6 +77,7 @@ namespace Game.Storage
 		readonly Pool<PatchPointer.PatchesGroup> RegionChanges.LoadTask.IPoolsHolder.PatchGroupsPool => patchGroupPool;
 		readonly ChainSegment<PatchView>.Pool RegionChanges.LoadTask.IPoolsHolder.SegmentsPool => patchesSegmentsPool;
 
+		/// <remarks>Access only from <see cref="ThreadRules.SyncPhase"/></remarks>
 		public class Managed
 		{
 			private readonly Storage* storage;
@@ -119,7 +120,7 @@ namespace Game.Storage
 						var (location, slot) =
 							(loadTask.RegionBaseLocation, loadTask.RegionBaseSlot);
 						bases[location] = slot;
-						slot.ItemPointer->UsageState.SetBits(RegionBase.UsageBits.Cached);
+						slot.Pointer->UsageState.SetBits(RegionBase.UsageBits.Cached);
 						chunkProcessor.RegionBaseLoaded(location, slot);
 						loadTask.RegionBaseLocation = default;
 						loadTask.RegionBaseSlot = default;
@@ -139,10 +140,10 @@ namespace Game.Storage
 							freeLoadRegionChangesTasks.Enqueue(loadTask);
 							changes[loadTask.RegionChangesLocation] = loadTask.RegionChangesSlot;
 							var chunks = UnmanagedArray.From(
-								&loadTask.RegionChangesSlot.ItemPointer->Chunks
+								&loadTask.RegionChangesSlot.Pointer->Chunks
 							);
 							foreach (var chunk in chunks) {
-								chunk.ItemPointer->UsageState.SetBits(ChunkPatches.UsageBits.Cached);
+								chunk.Pointer->UsageState.SetBits(ChunkPatches.UsageBits.Cached);
 								chunkProcessor.ChunkLoadedOrUpdated(chunk);
 							}
 							loadTask.RegionChangesSlot = default;
@@ -165,7 +166,7 @@ namespace Game.Storage
 						unloadRegionChangesTasks.RemoveAt(i);
 						freeUnloadRegionChangesTasks.Enqueue(unloadTask);
 						var slot = storage->changes[unloadTask.RegionChangesLocation];
-						slot.ItemPointer->UnloadTaskCount--;
+						slot.Pointer->UnloadTaskCount--;
 					}
 				}
 			}
@@ -235,6 +236,7 @@ namespace Game.Storage
 					task = new RegionBase.LoadTask(fileManager);
 				}
 				task.RegionBaseLocation = loadIntents[bestMatchIndex];
+				loadIntents.RemoveAtSwapBack(bestMatchIndex);
 				task.RegionBaseSlot = storage->regionBasesPool.Rent();
 				loadRegionBaseTasks.Add(Task.Run(task.ActionDelegate));
 			}
@@ -261,9 +263,10 @@ namespace Game.Storage
 					task = new RegionChanges.LoadTask(fileManager);
 				}
 				task.RegionChangesLocation = loadIntents[bestMatchIndex];
+				loadIntents.RemoveAtSwapBack(bestMatchIndex);
 				task.RegionChangesSlot = storage->regionChangesPool.Rent();
 				var chunkPatchesArray =
-					UnmanagedArray.From(&task.RegionChangesSlot.ItemPointer->Chunks);
+					UnmanagedArray.From(&task.RegionChangesSlot.Pointer->Chunks);
 				for (int i = 0; i < chunkPatchesArray.Length; i++) {
 					chunkPatchesArray[i] = storage->chunkPatchesPool.Rent();
 				}
@@ -279,19 +282,20 @@ namespace Game.Storage
 					var location = unloadIntents[i];
 					if (playerCache->CanSaveChunks(location)) {
 						unloadIntents.RemoveAtSwapBack(i);
-						var regionChangesPtr = changes[location].ItemPointer;
+						var regionChangesPtr = changes[location].Pointer;
 						regionChangesPtr->UnloadTaskCount--;
 						regionChangesPtr->IsModified = true;
 					}
 				}
 				if (unloadIntents.Count == 0)
 					return;
-				int bestMatchIndex = GetNearestLocationToPlayer(
+				int bestMatchIndex = GetFarthestLocationToPlayer(
 					unloadIntents, playerCache->CurrentChangesRegionPerPlayer
 				);
 				var regionChangesLocation = unloadIntents[bestMatchIndex];
+				unloadIntents.RemoveAtSwapBack(bestMatchIndex);
 				var slot = changes[regionChangesLocation];
-				var regionChanges = slot.ItemPointer;
+				var regionChanges = slot.Pointer;
 				if (!freeUnloadRegionChangesTasks.TryDequeue(out var task)) {
 					task = new RegionChanges.UnloadTask(fileManager);
 				}
@@ -379,13 +383,13 @@ namespace Game.Storage
 			if (!changes.TryGetValue(regionLocation, out var currentChangesSlot)) {
 				throw new Exception("Invalid chunk flow: chunk not in cache.");
 			}
-			var regionChanges = currentChangesSlot.ItemPointer;
+			var regionChanges = currentChangesSlot.Pointer;
 			regionChanges->IsModified = true;
 			int chunkLocalIndex = RegionChanges.GetChunkIndexInsideRegion(location);
 			var chunks = UnmanagedArray.From(&regionChanges->Chunks);
 			var slot = chunks[chunkLocalIndex];
-			if (slot.ItemPointer->UsageState == ChunkPatches.UsageBits.Cached) {
-				var chain = slot.ItemPointerUnchecked->PatchesChainStart;
+			if (slot.Pointer->UsageState == ChunkPatches.UsageBits.Cached) {
+				var chain = slot.PointerUnchecked->PatchesChainStart;
 				if (chain.IsNotNull) {
 					foreach (var view in chain.EnumerateChain()) {
 						if (view.Patch.DecrementReferenceCount() == 0) {
@@ -400,14 +404,14 @@ namespace Game.Storage
 			}
 			newChunkPatches.UsageState.SetBits(ChunkPatches.UsageBits.Cached);
 			slot = chunkPatchesPool.Rent();
-			*slot.ItemPointer = newChunkPatches;
+			*slot.Pointer = newChunkPatches;
 			chunks[chunkLocalIndex] = slot;
 		}
 
 		public void CollectGarbage()
 		{
 			foreach (var slot in chunksNotInCache) {
-				var chunk = slot.ItemPointer;
+				var chunk = slot.Pointer;
 				if (chunk->UsageState == ChunkPatches.UsageBits.None) {
 					foreach (var view in *chunk) {
 						if (view.Patch.DecrementReferenceCount() == 0) {
@@ -421,7 +425,7 @@ namespace Game.Storage
 			foreach (var pair in bases) {
 				var slot = pair.Value;
 				var loacation = pair.Key;
-				var regionBase = slot.ItemPointer;
+				var regionBase = slot.Pointer;
 				if (
 					!playerCache->CanSaveChunks(loacation) &&
 					regionBase->UsageState == RegionBase.UsageBits.Cached
@@ -433,7 +437,7 @@ namespace Game.Storage
 			foreach (var pair in changes) {
 				var slot = pair.Value;
 				var loacation = pair.Key;
-				var regionChanges = slot.ItemPointer;
+				var regionChanges = slot.Pointer;
 				if (regionChanges->IsModified) {
 					if (regionChanges->UnloadTaskCount != 0)
 						continue;
@@ -446,12 +450,12 @@ namespace Game.Storage
 				var chunks = UnmanagedArray.From(&regionChanges->Chunks);
 				var mergedFlags = ChunkPatches.UsageBits.None;
 				foreach (var chunk in chunks) {
-					mergedFlags |= chunk.ItemPointer->UsageState;
+					mergedFlags |= chunk.Pointer->UsageState;
 				}
 				if (mergedFlags != ChunkPatches.UsageBits.None)
 					continue;
 				foreach (var chunk in chunks) {
-					var chain = chunk.ItemPointer->PatchesChainStart;
+					var chain = chunk.Pointer->PatchesChainStart;
 					if (chain.IsNotNull) {
 						foreach (var view in chain.EnumerateChain()) {
 							if (view.Patch.DecrementReferenceCount() == 0) {
@@ -477,7 +481,7 @@ namespace Game.Storage
 
 		private void DecrementReferenceCountForeachPatch(Pool<ChunkPatches>.Slot chunkPatches)
 		{
-			foreach (var patchView in *chunkPatches.ItemPointer) {
+			foreach (var patchView in *chunkPatches.Pointer) {
 				int referenceCount = patchView.Patch.DecrementReferenceCount();
 				if (referenceCount < 0)
 					throw new Exception($"Invalid patch reference count: {referenceCount}");

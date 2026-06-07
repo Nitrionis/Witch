@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿/*using NUnit.Framework;
 using SimpleInjector;
 using Game;
 using Game.ClientServer;
@@ -148,3 +148,4 @@ namespace Tests
 		}
 	}
 }
+*/

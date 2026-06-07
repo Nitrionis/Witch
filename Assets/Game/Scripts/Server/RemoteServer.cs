@@ -5,10 +5,7 @@ namespace Game.Server
 {
 	internal struct RemoteServer
 	{
-		private LocalClient clientStorage;
-
-		public RemoteServer(LocalClient clientStorage) => this.clientStorage = clientStorage;
-
+		
 		private void GetChunkPatches(ChunkPatches expectedPatches)
 		{
 			throw new System.NotImplementedException();

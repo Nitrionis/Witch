@@ -180,7 +180,7 @@ namespace Game.Storage
 				if (byteCount == BufferSizeForUnpack) {
 					throw new Exception("Invalid file structure.");
 				}
-				var regionBase = RegionBaseSlot.ItemPointer;
+				var regionBase = RegionBaseSlot.Pointer;
 				UnpackRegion(regionBase, new UnmanagedArray<byte>(buffer, BufferSizeForUnpack));
 				regionBase->UsageState = default;
 				regionBase->Location = RegionBaseLocation;

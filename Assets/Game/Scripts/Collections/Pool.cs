@@ -79,24 +79,28 @@ namespace Game.Collections
 		public readonly struct Slot
 		{
 			public readonly ulong Version;
-			private readonly InnerItem* InnerItem;
+			private readonly InnerItem* innerItem;
 
 			public readonly bool IsNull
 			{
 				[MethodImpl(MethodImplOptions.AggressiveInlining)]
-				get => InnerItem is null;
+				get => innerItem is null;
 			}
 
-			public T* ItemPointerUnchecked
+			public T* PointerUnchecked
 			{
 				[MethodImpl(MethodImplOptions.AggressiveInlining)]
-				get => &InnerItem->Item;
+				get => &innerItem->Item;
 			}
 
-			public T* ItemPointer => InnerItem is not null ? &InnerItem->Item : throw new Exception();
+			public T* Pointer
+			{
+				[MethodImpl(MethodImplOptions.AggressiveInlining)]
+				get => innerItem is not null ? &innerItem->Item : throw new Exception();
+			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public static implicit operator T*(Slot slot) => slot.ItemPointer;
+			public static implicit operator T*(Slot slot) => slot.Pointer;
 		}
 	}
 }

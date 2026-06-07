@@ -29,7 +29,7 @@ namespace Game.Collections
 		{
 			var segment = this;
 			while (!segment.IsNull) {
-				var next = segment.slot.ItemPointerUnchecked->Next;
+				var next = segment.slot.PointerUnchecked->Next;
 				pool.Return(next);
 				segment = next;
 			}
@@ -60,7 +60,7 @@ namespace Game.Collections
 					if (currentSegment.IsNull) {
 						throw new System.Exception("Enumeration of an uninitialized segment");
 					}
-					dataChunk = currentSegment.slot.ItemPointerUnchecked;
+					dataChunk = currentSegment.slot.PointerUnchecked;
 				}
 
 				public bool MoveNext()
@@ -77,7 +77,7 @@ namespace Game.Collections
 				private bool TryGetItemInNextSegments()
 				{
 					while (!dataChunk->Next.IsNull) {
-						dataChunk = dataChunk->Next.slot.ItemPointerUnchecked;
+						dataChunk = dataChunk->Next.slot.PointerUnchecked;
 						if (dataChunk->ItemCount > 0) {
 							Current = ((TItem*)&dataChunk->Items)[itemIndex];
 							itemIndex = 1;
@@ -118,7 +118,7 @@ namespace Game.Collections
 					return;
 				}
 				ChainSegment<TItem> next;
-				while (!(next = last.slot.ItemPointerUnchecked->Next).IsNull) {
+				while (!(next = last.slot.PointerUnchecked->Next).IsNull) {
 					last = next;
 				}
 			}
@@ -128,9 +128,9 @@ namespace Game.Collections
 				if (last.IsNull) {
 					first = pool.Rent();
 					last = first;
-					last.slot.ItemPointerUnchecked->ItemCount = 0;
+					last.slot.PointerUnchecked->ItemCount = 0;
 				}
-				var dataChunk = last.slot.ItemPointerUnchecked;
+				var dataChunk = last.slot.PointerUnchecked;
 				int itemCount = dataChunk->ItemCount;
 				if (itemCount < dataChunk->Items.Length) {
 					((TItem*)&dataChunk->Items)[itemCount] = item;
@@ -145,7 +145,7 @@ namespace Game.Collections
 				if (last.IsNull) {
 					return false;
 				}
-				var dataChunk = last.slot.ItemPointerUnchecked;
+				var dataChunk = last.slot.PointerUnchecked;
 				int itemCount = dataChunk->ItemCount;
 				if (itemCount < dataChunk->Items.Length) {
 					((TItem*)&dataChunk->Items)[itemCount] = item;
@@ -160,10 +160,10 @@ namespace Game.Collections
 				if (last.IsNull) {
 					first = segment;
 					last = first;
-					last.slot.ItemPointerUnchecked->ItemCount = 0;
+					last.slot.PointerUnchecked->ItemCount = 0;
 					return;
 				}
-				var dataChunk = last.slot.ItemPointerUnchecked;
+				var dataChunk = last.slot.PointerUnchecked;
 				dataChunk->Next = segment;
 				dataChunk->ItemCount = 0;
 				last = segment;
@@ -173,9 +173,9 @@ namespace Game.Collections
 			private void AddItemToNewSegment(TItem item, Pool pool)
 			{
 				var segment = pool.Rent();
-				last.slot.ItemPointerUnchecked->Next = segment;
+				last.slot.PointerUnchecked->Next = segment;
 				last = segment;
-				var dataChunk = last.slot.ItemPointerUnchecked;
+				var dataChunk = last.slot.PointerUnchecked;
 				int itemCount = dataChunk->ItemCount;
 				((TItem*)&dataChunk->Items)[itemCount] = item;
 				dataChunk->ItemCount = 1;

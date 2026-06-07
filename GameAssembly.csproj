@@ -63,17 +63,14 @@
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\6000.5.0b2\Editor\Data\BCLExtensions\TargetingPacks\netstandard2.1\analyzers\dotnet\roslyn4.0\cs\System.Text.Json.SourceGeneration.dll" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Game\DistanceComparer.cs" />
     <Compile Include="Assets\Game\Scripts\Collections\DisposableMemoryBlocks.cs" />
     <Compile Include="Assets\Game\Scripts\Cheats\CheatManager.cs" />
-    <Compile Include="Assets\Game\Scripts\Storage\PlayersCache.cs" />
-    <Compile Include="Assets\Game\Scripts\ThreadNames.cs" />
-    <Compile Include="Assets\Game\Scripts\Tools\AssemblyTools.cs" />
     <Compile Include="Assets\Game\Scripts\Tools\FastNoiseLite.cs" />
     <Compile Include="Assets\Game\Scripts\Collections\DisposeList.cs" />
     <Compile Include="Assets\Game\Scripts\Storage\Storage.cs" />
     <Compile Include="Assets\Game\Scripts\Server\EventsStream.cs" />
     <Compile Include="Assets\Game\Scripts\Collections\Pool.cs" />
+    <Compile Include="Assets\Game\Scripts\Storage\PlayersCache.cs" />
     <Compile Include="Assets\Game\Scripts\Allocators\SessionRewindableAllocator.cs" />
     <Compile Include="Assets\Game\Terrain\NoiseTest\NoiseTest.cs" />
     <Compile Include="Assets\Game\Scripts\Server\LocalServer.cs" />
@@ -85,8 +82,10 @@
     <Compile Include="Assets\Game\Scripts\Cheats\TerrainHeightGenerator.cs" />
     <Compile Include="Assets\Game\Experiments\RotationTest.cs" />
     <Compile Include="Assets\Game\Scripts\Pointer.cs" />
+    <Compile Include="Assets\Game\Scripts\ThreadRules.cs" />
     <Compile Include="Assets\Game\Scripts\WorldGeneration\GeneratorPhase.cs" />
     <Compile Include="Assets\Game\Experiments\VolumetricLightAndGlow_2.cs" />
+    <Compile Include="Assets\Game\Scripts\Tools\AssemblyTools.cs" />
     <Compile Include="Assets\Game\Scripts\Storage\ChunkLocation.cs" />
     <Compile Include="Assets\Game\Scripts\Server\RemoteServer.cs" />
     <Compile Include="Assets\Game\Scripts\Storage\ObjectId.cs" />
@@ -96,10 +95,10 @@
     <Compile Include="Assets\Game\Scripts\Server\Commands.cs" />
     <Compile Include="Assets\Game\Experiments\TreeShadow.cs" />
     <Compile Include="Assets\Game\Scripts\Cheats\IslandGenerator.cs" />
-    <Compile Include="Assets\Game\Scripts\Collections\NativeMemoryChain.cs" />
     <Compile Include="Assets\Game\Scripts\World\ChunkLod2.cs" />
     <Compile Include="Assets\Game\Terrain\Compressor.cs" />
     <Compile Include="Assets\Game\Scripts\Storage\ChunkSize.cs" />
+    <Compile Include="Assets\Game\DistanceComparer.cs" />
     <Compile Include="Assets\Game\Scripts\Storage\FileManager.cs" />
     <Compile Include="Assets\Game\Scripts\Storage\PatchPointer.cs" />
     <Compile Include="Assets\Game\Scripts\Collections\SegmentsChain.cs" />

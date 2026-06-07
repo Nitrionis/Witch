@@ -1,10 +1,10 @@
 ﻿
 namespace Game
 {
-	public enum ThreadNames
+	public enum ThreadRules
 	{
 		/// <summary>
-		/// 
+		/// App main thread.
 		/// </summary>
 		MainThread,
 
@@ -34,7 +34,7 @@ namespace Game
 		/// <remarks>
 		/// Read: [all systems]
 		/// Write: [all systems]
-		/// Execution: [after MainJob]
+		/// Execution: [after MainJob sync with main thread]
 		/// </remarks>
 		SyncPhase,
 
