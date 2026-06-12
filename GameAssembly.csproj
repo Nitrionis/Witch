@@ -83,6 +83,7 @@
     <Compile Include="Assets\Game\Experiments\RotationTest.cs" />
     <Compile Include="Assets\Game\Scripts\Pointer.cs" />
     <Compile Include="Assets\Game\Scripts\ThreadRules.cs" />
+    <Compile Include="Assets\Game\Scripts\Storage\IFileManager.cs" />
     <Compile Include="Assets\Game\Scripts\WorldGeneration\GeneratorPhase.cs" />
     <Compile Include="Assets\Game\Experiments\VolumetricLightAndGlow_2.cs" />
     <Compile Include="Assets\Game\Scripts\Tools\AssemblyTools.cs" />
@@ -100,7 +101,6 @@
     <Compile Include="Assets\Game\Scripts\Storage\ChunkSize.cs" />
     <Compile Include="Assets\Game\DistanceComparer.cs" />
     <Compile Include="Assets\Game\Scripts\Storage\FileManager.cs" />
-    <Compile Include="Assets\Game\Scripts\Storage\IFileManager.cs" />
     <Compile Include="Assets\Game\Scripts\Storage\PatchPointer.cs" />
     <Compile Include="Assets\Game\Scripts\Collections\SegmentsChain.cs" />
     <Compile Include="Assets\Game\Scripts\Storage\ChunkPatch.cs" />
@@ -779,6 +779,14 @@
     </Reference>
     <Reference Include="Mono.Cecil">
       <HintPath>Library\PackageCache\com.unity.nuget.mono-cecil@ecb9724e46ff\Mono.Cecil.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="AiEditorToolsSdk">
+      <HintPath>Packages\com.unity.ai.assistant\Modules\Unity.AI.Toolkit.Sdk\Editor\AiEditorToolsSdk.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>Library\PackageCache\com.unity.nuget.newtonsoft-json@4dfd81071c64\Runtime\Newtonsoft.Json.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="netstandard">
