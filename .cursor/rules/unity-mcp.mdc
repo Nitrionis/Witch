@@ -1,0 +1,48 @@
+---
+description: Use Unity MCP for builds, validation, and editor tasks — not dotnet CLI
+alwaysApply: true
+---
+
+# Unity MCP (not dotnet CLI)
+
+This is a **Unity 6** project. Do not use `dotnet build`, `dotnet test`, `dotnet run`, or other dotnet CLI commands to compile, validate, or run game code. Unity assemblies, defines, and packages are resolved by the Editor — the CLI cannot reproduce that environment.
+
+Use the **Unity MCP** server (`user-unity-mcp`) instead. The Unity Editor must be running and connected.
+
+## Before calling MCP
+
+1. List/read tool descriptors under the MCP folder (`mcps/user-unity-mcp/tools/*.json`) before `CallMcpTool`.
+2. If a call fails with auth/connection errors, use `mcp_auth` for that server, then retry.
+
+## Tool mapping
+
+| Task | Use |
+|------|-----|
+| Compile / run editor logic, inspect project state, trigger Editor APIs | `Unity_RunCommand` |
+| Build errors, warnings, runtime logs | `Unity_GetConsoleLogs` |
+| Scene / camera screenshots | `Unity_SceneView_Capture2DScene`, `Unity_SceneView_CaptureMultiAngleSceneView`, `Unity_Camera_Capture` |
+| Generate assets | `Unity_AssetGeneration_GenerateAsset`, `Unity_AssetGeneration_GetModels` |
+
+## `Unity_RunCommand` conventions
+
+- Class **must** be named `CommandScript`, `internal`, implementing `IRunCommand`.
+- Use `result.RegisterObjectCreation`, `result.RegisterObjectModification`, `result.DestroyObject`, and `result.Log` / `LogWarning` / `LogError`.
+- Do not use top-level statements.
+
+```csharp
+using UnityEngine;
+using UnityEditor;
+
+internal class CommandScript : IRunCommand
+{
+    public void Execute(ExecutionResult result)
+    {
+        // editor logic here
+        result.Log("Done");
+    }
+}
+```
+
+## When shell is still OK
+
+Use the terminal for **non-Unity** work: git, `gh`, file search, package managers unrelated to compiling game code. If Unity MCP cannot do something and dotnet CLI would not help either, say what you could not do and why.
