@@ -6,7 +6,9 @@
         "UnityEditor.TestRunner",
         "GameAssembly",
         "Unity.Burst",
-        "Unity.Collections"
+        "Unity.Collections",
+        "Unity.Entities",
+        "Unity.Mathematics"
     ],
     "includePlatforms": [
         "Editor"

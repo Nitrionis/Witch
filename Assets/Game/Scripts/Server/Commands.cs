@@ -79,7 +79,7 @@ namespace Game.Server
 			public Entity Entity;
 			public float3 Position;
 			public float3 Direction;
-			public double TimeSinceStartup;
+			//public double TimeSinceStartup; TODO split in two parts
 
 			public byte Id
 			{

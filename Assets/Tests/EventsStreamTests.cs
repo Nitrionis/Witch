@@ -7,6 +7,7 @@ using Game.Server;
 using NUnit.Framework;
 using Unity.Burst;
 using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
 using Unity.Mathematics;
 
@@ -21,14 +22,18 @@ namespace Tests
 		}
 
 		[BurstCompile]
-		[MonoPInvokeCallback(typeof(EventsStream.Reader.ProcessorMethod.ProcessDelegate))]
-		private static void ProcessSetHealth(EventsStream.Reader.ProcessorMethod.CallArgs args)
+		private static class SetHealthProcessor
 		{
-			var state = (ProcessingState*)args.Processor;
-			for (byte i = 0; i < args.CommandCount; i++) {
-				ref var command = ref *(Command.SetHealth*)(args.Commands + i * sizeof(Command.SetHealth));
-				state->ProcessedCount++;
-				state->LastHealth = command.Health;
+			[BurstCompile]
+			[MonoPInvokeCallback(typeof(EventsStream.Reader.ProcessorMethod.ProcessDelegate))]
+			public static void Process(EventsStream.Reader.ProcessorMethod.CallArgs args)
+			{
+				var state = (ProcessingState*)args.Processor;
+				for (byte i = 0; i < args.CommandCount; i++) {
+					ref var command = ref *(Command.SetHealth*)(args.Commands + i * sizeof(Command.SetHealth));
+					state->ProcessedCount++;
+					state->LastHealth = command.Health;
+				}
 			}
 		}
 
@@ -42,7 +47,6 @@ namespace Tests
 			public Harness(int writerCount = 1)
 			{
 				allocator = new SessionRewindableAllocator(initialBlockSize: 64 * 1024);
-				disposeList.Add(allocator);
 				state = allocator.AllocateArray<ProcessingState>(length: 1);
 				*state = default;
 
@@ -52,7 +56,7 @@ namespace Tests
 				);
 				var processSetHealth = BurstCompiler.CompileFunctionPointer<
 					EventsStream.Reader.ProcessorMethod.ProcessDelegate
-				>(ProcessSetHealth);
+				>(SetHealthProcessor.Process);
 				processors[6] = new EventsStream.Reader.ProcessorMethod(state, processSetHealth);
 
 				stream = new EventsStream(disposeList, allocator, writerCount, processors);
@@ -60,16 +64,24 @@ namespace Tests
 
 			public EventsStream.Writer CreateWriter(int writerIndex = 0)
 			{
-				return new EventsStream.Writer(&stream, writerIndex);
+				return new EventsStream.Writer(
+					(EventsStream*)UnsafeUtility.AddressOf(ref stream),
+					writerIndex
+				);
 			}
 
-			public EventsStream.Reader CreateReader() => new(&stream);
+			public EventsStream.Reader CreateReader() =>
+				new((EventsStream*)UnsafeUtility.AddressOf(ref stream));
 
 			public int ProcessedCount => state->ProcessedCount;
 
 			public int LastHealth => state->LastHealth;
 
-			public void Dispose() => disposeList.Dispose();
+			public void Dispose()
+			{
+				disposeList.Dispose();
+				allocator.Dispose();
+			}
 		}
 
 		private static Command.SetHealth CreateSetHealth(int health) =>
@@ -203,7 +215,7 @@ namespace Tests
 				Entity = Entity.Null,
 				Position = float3.zero,
 				Direction = math.forward(),
-				TimeSinceStartup = 0
+				// TODO TimeSinceStartup = 0
 			});
 			writer.Flush();
 

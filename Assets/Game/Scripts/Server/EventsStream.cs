@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using AOT;
 using Game.Allocators;
@@ -75,7 +77,7 @@ namespace Game.Server
 				if (sizeof(CommandInfo) != 4 || UnsafeUtility.AlignOf<CommandInfo>() != 1) {
 					throw new Exception($"Invalid CommandInfo layout");
 				}
-				if (typeof(ICommand).GetField(nameof(ICommand.Id)).FieldType != typeof(byte))
+				if (typeof(ICommand).GetProperty(nameof(ICommand.Id))?.PropertyType != typeof(byte))
 					throw new Exception($"ICommand.Id type must be byte");
 				if (processors.Length != byte.MaxValue)
 					throw new Exception($"Invalid {nameof(processors)} legth");
@@ -153,7 +155,7 @@ namespace Game.Server
 			foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies()) {
 				if (AssemblyTools.IsStandardAssembly(assembly))
 					continue;
-				foreach (var type in assembly.GetTypes()) {
+				foreach (var type in GetLoadableTypes(assembly)) {
 					if (
 						type.IsValueType &&
 						!type.IsEnum &&
@@ -164,6 +166,15 @@ namespace Game.Server
 				}
 			}
 			return commandTypes;
+		}
+
+		private static IEnumerable<Type> GetLoadableTypes(Assembly assembly)
+		{
+			try {
+				return assembly.GetTypes();
+			} catch (ReflectionTypeLoadException ex) {
+				return ex.Types.Where(type => type != null);
+			}
 		}
 
 		public struct WriterInfo
