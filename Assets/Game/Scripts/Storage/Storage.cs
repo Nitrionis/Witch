@@ -54,8 +54,8 @@ namespace Game.Storage
 		private readonly Pool<ChunkPatches> chunkPatchesPool;
 		private readonly Pool<RegionChanges> regionChangesPool;
 		private readonly Pool<RegionBase> regionBasesPool;
-		private readonly Pool<PatchPointer.SinglePatch> singlePatchPool;
-		private readonly Pool<PatchPointer.PatchesGroup> patchGroupPool;
+		private readonly Pool<PatchPointer.SinglePatch> patchesPool;
+		private readonly Pool<PatchPointer.PatchesGroup> patchGroupsPool;
 		private readonly ChainSegment<PatchView>.Pool patchesSegmentsPool;
 
 		private NativeHashMap<RegionBaseLocation, Pool<RegionBase>.Slot> bases;
@@ -71,10 +71,10 @@ namespace Game.Storage
 
 		private PlayersCache* playerCache;
 
-		readonly Pool<PatchPointer.SinglePatch> PatchPointer.IPoolsHolder.PatchesPool => singlePatchPool;
-		readonly Pool<PatchPointer.PatchesGroup> PatchPointer.IPoolsHolder.PatchGroupsPool => patchGroupPool;
+		readonly Pool<PatchPointer.SinglePatch> PatchPointer.IPoolsHolder.PatchesPool => patchesPool;
+		readonly Pool<PatchPointer.PatchesGroup> PatchPointer.IPoolsHolder.PatchGroupsPool => patchGroupsPool;
 
-		readonly Pool<PatchPointer.PatchesGroup> RegionChanges.LoadTask.IPoolsHolder.PatchGroupsPool => patchGroupPool;
+		readonly Pool<PatchPointer.PatchesGroup> RegionChanges.LoadTask.IPoolsHolder.PatchGroupsPool => patchGroupsPool;
 		readonly ChainSegment<PatchView>.Pool RegionChanges.LoadTask.IPoolsHolder.SegmentsPool => patchesSegmentsPool;
 
 		/// <remarks>Access only from <see cref="ThreadRules.SyncPhase"/></remarks>
@@ -93,8 +93,6 @@ namespace Game.Storage
 			private readonly Queue<RegionChanges.UnloadTask> freeUnloadRegionChangesTasks;
 			private readonly List<Task<RegionChanges.UnloadTask>> unloadRegionChangesTasks;
 
-			private bool isSync;
-
 			public Managed(FileManager fileManager, Storage* storage, IChunkProcessor chunkProcessor)
 			{
 				this.fileManager = fileManager;
@@ -111,47 +109,49 @@ namespace Game.Storage
 			private void ProcessLoadRegionBaseTasks()
 			{
 				var bases = storage->bases;
-				for (int i = loadRegionBaseTasks.Count - 1; i >= 0; i--) {
+				for (int i = 0; i < loadRegionBaseTasks.Count; i++) {
 					var task = loadRegionBaseTasks[i];
-					if (task.IsCompleted) {
-						var loadTask = task.Result;
-						loadRegionBaseTasks.RemoveAt(i);
-						freeLoadRegionBaseTasks.Enqueue(loadTask);
-						var (location, slot) =
-							(loadTask.RegionBaseLocation, loadTask.RegionBaseSlot);
-						bases[location] = slot;
-						slot.Pointer->UsageState.SetBits(RegionBase.UsageBits.Cached);
-						chunkProcessor.RegionBaseLoaded(location, slot);
-						loadTask.RegionBaseLocation = default;
-						loadTask.RegionBaseSlot = default;
+					if (!task.IsCompleted) {
+						continue;
 					}
+					var loadTask = task.Result;
+					loadRegionBaseTasks.RemoveAtSwapBack(i);
+					freeLoadRegionBaseTasks.Enqueue(loadTask);
+					var (location, slot) =
+						(loadTask.RegionBaseLocation, loadTask.RegionBaseSlot);
+					bases[location] = slot;
+					slot.Pointer->UsageState.SetBits(RegionBase.UsageBits.Cached);
+					chunkProcessor.RegionBaseLoaded(location, slot);
+					loadTask.RegionBaseLocation = default;
+					loadTask.RegionBaseSlot = default;
 				}
 			}
 
 			private void ProcessLoadRegionChangesTasks()
 			{
 				var changes = storage->changes;
-				for (int i = loadRegionChangesTasks.Count - 1; i >= 0; i--) {
+				for (int i = 0; i < loadRegionChangesTasks.Count; i++) {
 					var task = loadRegionChangesTasks[i];
-					if (task.IsCompleted) {
-						var loadTask = task.Result;
-						if (loadTask.IsCompleted) {
-							loadRegionChangesTasks.RemoveAt(i);
-							freeLoadRegionChangesTasks.Enqueue(loadTask);
-							changes[loadTask.RegionChangesLocation] = loadTask.RegionChangesSlot;
-							var chunks = UnmanagedArray.From(
-								&loadTask.RegionChangesSlot.Pointer->Chunks
-							);
-							foreach (var chunk in chunks) {
-								chunk.Pointer->UsageState.SetBits(ChunkPatches.UsageBits.Cached);
-								chunkProcessor.ChunkLoadedOrUpdated(chunk);
-							}
-							loadTask.RegionChangesSlot = default;
-							loadTask.RegionChangesLocation = default;
-						} else {
-							loadTask.FillBuffers(storage);
-							loadRegionChangesTasks[i] = Task.Run(loadTask.ActionDelegate);
+					if (!task.IsCompleted) {
+						continue;
+					}
+					var loadTask = task.Result;
+					if (loadTask.IsCompleted) {
+						loadRegionChangesTasks.RemoveAtSwapBack(i);
+						freeLoadRegionChangesTasks.Enqueue(loadTask);
+						changes[loadTask.RegionChangesLocation] = loadTask.RegionChangesSlot;
+						var chunkSlots = UnmanagedArray.From(
+							&loadTask.RegionChangesSlot.Pointer->Chunks
+						);
+						foreach (var chunkSlot in chunkSlots) {
+							chunkSlot.Pointer->UsageState.SetBits(ChunkPatches.UsageBits.Cached);
+							chunkProcessor.ChunkLoadedOrUpdated(chunkSlot);
 						}
+						loadTask.RegionChangesSlot = default;
+						loadTask.RegionChangesLocation = default;
+					} else {
+						loadTask.FillBuffers(storage);
+						loadRegionChangesTasks[i] = Task.Run(loadTask.ActionDelegate);
 					}
 				}
 			}
@@ -159,15 +159,16 @@ namespace Game.Storage
 			private void ProcessUnloadRegionChangesTasks()
 			{
 				var playerCache = storage->playerCache;
-				for (int i = unloadRegionChangesTasks.Count - 1; i >= 0; i--) {
+				for (int i = 0; i < unloadRegionChangesTasks.Count; i++) {
 					var task = unloadRegionChangesTasks[i];
-					if (task.IsCompleted) {
-						var unloadTask = task.Result;
-						unloadRegionChangesTasks.RemoveAt(i);
-						freeUnloadRegionChangesTasks.Enqueue(unloadTask);
-						var slot = storage->changes[unloadTask.RegionChangesLocation];
-						slot.Pointer->UnloadTaskCount--;
+					if (!task.IsCompleted) {
+						continue;
 					}
+					var unloadTask = task.Result;
+					unloadRegionChangesTasks.RemoveAtSwapBack(i);
+					freeUnloadRegionChangesTasks.Enqueue(unloadTask);
+					var slot = storage->changes[unloadTask.RegionChangesLocation];
+					slot.Pointer->UnloadTaskCount--;
 				}
 			}
 
@@ -218,17 +219,19 @@ namespace Game.Storage
 			private void ProcessLoadRegionBaseIntents()
 			{
 				var loadIntents = storage->loadRegionBaseIntents;
-				if (loadRegionBaseTasks.Count > 0 || loadIntents.Count == 0)
+				if (loadRegionBaseTasks.Count > 0 || loadIntents.Count == 0) {
 					return;
+				}
 				var playerCache = storage->playerCache;
-				for (int i = loadIntents.Count - 1; i >= 0; i--) {
+				for (int i = 0; i < loadIntents.Count; i++) {
 					var location = loadIntents[i];
 					if (!playerCache->CanSaveChunks(location)) {
 						loadIntents.RemoveAtSwapBack(i);
 					}
 				}
-				if (loadIntents.Count == 0)
+				if (loadIntents.Count == 0) {
 					return;
+				}
 				int bestMatchIndex = GetNearestLocationToPlayer(
 					loadIntents, playerCache->CurrentBasesRegionPerPlayer
 				);
@@ -254,8 +257,9 @@ namespace Game.Storage
 						loadIntents.RemoveAtSwapBack(i);
 					}
 				}
-				if (loadIntents.Count == 0)
+				if (loadIntents.Count == 0) {
 					return;
+				}
 				int bestMatchIndex = GetNearestLocationToPlayer(
 					loadIntents, playerCache->CurrentChangesRegionPerPlayer
 				);
@@ -294,22 +298,17 @@ namespace Game.Storage
 				);
 				var regionChangesLocation = unloadIntents[bestMatchIndex];
 				unloadIntents.RemoveAtSwapBack(bestMatchIndex);
-				var slot = changes[regionChangesLocation];
-				var regionChanges = slot.Pointer;
 				if (!freeUnloadRegionChangesTasks.TryDequeue(out var task)) {
 					task = new RegionChanges.UnloadTask(fileManager);
 				}
 				task.RegionChangesLocation = regionChangesLocation;
-				*task.Chunks = regionChanges->Chunks;
+				Pool<RegionChanges>.Slot slot = changes[regionChangesLocation];
+				*task.Chunks = slot.Pointer->Chunks;
 				unloadRegionChangesTasks.Add(Task.Run(task.ActionDelegate));
 			}
 
 			public void Sync()
 			{
-				var playerCache = storage->playerCache;
-				var bases = storage->bases;
-				var changes = storage->changes;
-
 				ProcessLoadRegionBaseTasks();
 				ProcessLoadRegionChangesTasks();
 				ProcessUnloadRegionChangesTasks();
@@ -335,8 +334,8 @@ namespace Game.Storage
 			chunkPatchesPool = new(dl, allocator);
 			regionChangesPool = new(dl, allocator);
 			regionBasesPool = new(dl, allocator);
-			singlePatchPool = new(dl, allocator, itemCountPerAllocation: 256);
-			patchGroupPool = new(dl, allocator, itemCountPerAllocation: 16);
+			patchesPool = new(dl, allocator, itemCountPerAllocation: 256);
+			patchGroupsPool = new(dl, allocator, itemCountPerAllocation: 16);
 			patchesSegmentsPool = new(dl, allocator, itemCountPerAllocation: 1024);
 
 			dl.Add(loadRegionBaseIntents = new(Allocator.Persistent));
