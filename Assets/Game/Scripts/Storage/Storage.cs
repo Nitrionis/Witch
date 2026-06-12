@@ -200,15 +200,15 @@ namespace Game.Storage
 				) where T : unmanaged, ILoacation
 			{
 				int bestMatchIndex = 0;
-				float minDistancesq = float.MaxValue;
+				float maxDistancesq = -1f;
 				for (int i = locations.Count - 1; i >= 0; i--) {
 					var location = locations[i];
 					for (int playerIndex = 0; playerIndex < playerPositions.Length; playerIndex++) {
 						float distancesq = math.distancesq(
 							(int2)location.AxisIndices, (int2)playerPositions[playerIndex].AxisIndices
 						);
-						if (distancesq > minDistancesq) {
-							minDistancesq = distancesq;
+						if (distancesq > maxDistancesq) {
+							maxDistancesq = distancesq;
 							bestMatchIndex = i;
 						}
 					}
@@ -223,7 +223,7 @@ namespace Game.Storage
 					return;
 				}
 				var playerCache = storage->playerCache;
-				for (int i = 0; i < loadIntents.Count; i++) {
+				for (int i = loadIntents.Count - 1; i >= 0; i--) {
 					var location = loadIntents[i];
 					if (!playerCache->CanSaveChunks(location)) {
 						loadIntents.RemoveAtSwapBack(i);
@@ -382,6 +382,9 @@ namespace Game.Storage
 			if (!changes.TryGetValue(regionLocation, out var currentChangesSlot)) {
 				throw new Exception("Invalid chunk flow: chunk not in cache.");
 			}
+			if (currentChangesSlot.IsNull) {
+				throw new Exception("Invalid chunk flow: region still loading.");
+			}
 			var regionChanges = currentChangesSlot.Pointer;
 			regionChanges->IsModified = true;
 			int chunkLocalIndex = RegionChanges.GetChunkIndexInsideRegion(location);
@@ -409,7 +412,10 @@ namespace Game.Storage
 
 		public void CollectGarbage()
 		{
-			foreach (var slot in chunksNotInCache) {
+			for (int i = chunksNotInCache.Count - 1; i >= 0; i--) {
+				var slot = chunksNotInCache[i];
+				if (slot.IsNull)
+					continue;
 				var chunk = slot.Pointer;
 				if (chunk->UsageState == ChunkPatches.UsageBits.None) {
 					foreach (var view in *chunk) {
@@ -419,10 +425,13 @@ namespace Game.Storage
 					}
 					chunk->PatchesChainStart.ReleaseChain(patchesSegmentsPool);
 					chunkPatchesPool.Release(slot);
+					chunksNotInCache.RemoveAtSwapBack(i);
 				}
 			}
 			foreach (var pair in bases) {
 				var slot = pair.Value;
+				if (slot.IsNull)
+					continue;
 				var loacation = pair.Key;
 				var regionBase = slot.Pointer;
 				if (
@@ -435,6 +444,8 @@ namespace Game.Storage
 			}
 			foreach (var pair in changes) {
 				var slot = pair.Value;
+				if (slot.IsNull)
+					continue;
 				var loacation = pair.Key;
 				var regionChanges = slot.Pointer;
 				if (regionChanges->IsModified) {
@@ -468,11 +479,11 @@ namespace Game.Storage
 				regionChangesPool.Release(slot);
 				regionChangesToRemove.Add(loacation);
 			}
-			for (int i = regionBasesToRemove.Count; i >= 0; i--) {
+			for (int i = regionBasesToRemove.Count - 1; i >= 0; i--) {
 				bases.Remove(regionBasesToRemove[i]);
 			}
 			regionBasesToRemove.Clear();
-			for (int i = regionChangesToRemove.Count; i >= 0; i--) {
+			for (int i = regionChangesToRemove.Count - 1; i >= 0; i--) {
 				changes.Remove(regionChangesToRemove[i]);
 			}
 			regionChangesToRemove.Clear();
