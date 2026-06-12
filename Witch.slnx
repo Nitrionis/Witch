@@ -12,8 +12,8 @@
   <Project Path="GameAssembly.csproj" />
   <Project Path="Unity.AI.Toolkit.Accounts.csproj" />
   <Project Path="Unity.AI.ModelSelector.csproj" />
-  <Project Path="Unity.AI.Assistant.Tools.Editor.csproj" />
   <Project Path="Unity.AI.Animate.csproj" />
+  <Project Path="Unity.AI.Assistant.Tools.Editor.csproj" />
   <Project Path="Unity.AI.Image.csproj" />
   <Project Path="Unity.AI.Generators.UI.csproj" />
   <Project Path="Unity.AI.Generators.IO.csproj" />

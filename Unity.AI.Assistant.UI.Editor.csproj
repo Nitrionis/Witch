@@ -16,9 +16,9 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <EnableDefaultItems>false</EnableDefaultItems>
     <LangVersion>9.0</LangVersion>
-    <RootNamespace></RootNamespace>
+    <RootNamespace>Unity.AI.Assistant.UI.Editor</RootNamespace>
     <OutputType>Library</OutputType>
-    <AssemblyName>Tests</AssemblyName>
+    <AssemblyName>Unity.AI.Assistant.UI.Editor</AssemblyName>
     <TargetFramework>netstandard2.1</TargetFramework>
     <BaseDirectory>.</BaseDirectory>
   </PropertyGroup>
@@ -38,7 +38,7 @@
     <UnityProjectGenerator>Package</UnityProjectGenerator>
     <UnityProjectGeneratorVersion>2.0.26</UnityProjectGeneratorVersion>
     <UnityProjectGeneratorStyle>SDK</UnityProjectGeneratorStyle>
-    <UnityProjectType>Game:1</UnityProjectType>
+    <UnityProjectType>Editor:5</UnityProjectType>
     <UnityBuildTarget>StandaloneWindows64:19</UnityBuildTarget>
     <UnityVersion>6000.5.0b2</UnityVersion>
   </PropertyGroup>
@@ -49,26 +49,477 @@
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\6000.5.0b2\Editor\Data\Tools\BuildPipeline\Unity.SourceGenerators\Unity.UIToolkit.SourceGenerator.dll" />
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\6000.5.0b2\Editor\Data\Tools\BuildPipeline\Unity.Analyzers.Common\Unity.Analyzers.Common.dll" />
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\6000.5.0b2\Editor\Data\Tools\BuildPipeline\Unity.Analyzers.LongLiving\Unity.Analyzers.LongLiving.dll" />
-    <Analyzer Include="C:\Users\nitro\Witch\Library\PackageCache\com.unity.entities@06b8ff85e8fb\Unity.Entities\SourceGenerators\JobEntityGenerator.dll" />
-    <Analyzer Include="C:\Users\nitro\Witch\Library\PackageCache\com.unity.entities@06b8ff85e8fb\Unity.Entities\SourceGenerators\SystemGenerator.dll" />
-    <Analyzer Include="C:\Users\nitro\Witch\Library\PackageCache\com.unity.entities@06b8ff85e8fb\Unity.Entities\SourceGenerators\Unity.Entities.Analyzer.dll" />
-    <Analyzer Include="C:\Users\nitro\Witch\Library\PackageCache\com.unity.entities@06b8ff85e8fb\Unity.Entities\SourceGenerators\SystemGenerator.LambdaJobs.dll" />
-    <Analyzer Include="C:\Users\nitro\Witch\Library\PackageCache\com.unity.entities@06b8ff85e8fb\Unity.Entities\SourceGenerators\SystemGenerator.SystemAPI.QueryBuilder.dll" />
-    <Analyzer Include="C:\Users\nitro\Witch\Library\PackageCache\com.unity.entities@06b8ff85e8fb\Unity.Entities\SourceGenerators\SystemGenerator.SystemAPI.dll" />
-    <Analyzer Include="C:\Users\nitro\Witch\Library\PackageCache\com.unity.entities@06b8ff85e8fb\Unity.Entities\SourceGenerators\SystemGenerator.SystemAPI.Query.dll" />
-    <Analyzer Include="C:\Users\nitro\Witch\Library\PackageCache\com.unity.entities@06b8ff85e8fb\Unity.Entities\SourceGenerators\SystemGenerator.Common.dll" />
-    <Analyzer Include="C:\Users\nitro\Witch\Library\PackageCache\com.unity.entities@06b8ff85e8fb\Unity.Entities\SourceGenerators\Common.dll" />
-    <Analyzer Include="C:\Users\nitro\Witch\Library\PackageCache\com.unity.entities@06b8ff85e8fb\Unity.Entities\SourceGenerators\SystemGenerator.EntityQueryBulkOperations.dll" />
-    <Analyzer Include="C:\Users\nitro\Witch\Library\PackageCache\com.unity.entities@06b8ff85e8fb\Unity.Entities\SourceGenerators\Unity.Entities.Analyzer.CodeFixes.dll" />
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\6000.5.0b2\Editor\Data\BCLExtensions\TargetingPacks\netstandard2.1\analyzers\dotnet\roslyn4.0\cs\System.Text.Json.SourceGeneration.dll" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Tests\NewTestScript.cs" />
-    <Compile Include="Assets\Tests\GameShellTests.cs" />
-    <Compile Include="Assets\Tests\EventsStreamTests.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\FunctionCall\FunctionCallBaseElement.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\AssistantTextField.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\CheckpointAffectedFileRow.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\ChatElementTodoList.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Utils\EnumDef.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\CheckpointConfirmationDialog.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Utils\LineNumberController.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\FunctionCall\EditPlanFunctionCallElement.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Utils\PopupTracker.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\FunctionCall\ValidateUIAssetFunctionCallElements.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\AssistantUIContext.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\UserInteraction\RetryInteractionContent.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\Settings\Gateway\ProviderEnvironmentariablesUI.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\FunctionCall\Interactions\TodoProgressInteractionElement.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\MCPClient\McpServerManagerView.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatScrollView.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Preview\ReflectionAttributeProcessor.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Markup\ChatMarkdownRenderer.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\Settings\Gateway\GatewayProjectSettingsPage.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Preview\UIPreviewContainer.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\History\HistoryPanel.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Markup\Renderers\CodeInlineBlockRenderer.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\FunctionCall\ValidateUIAssetFunctionCallElementBase.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\AssistantProjectSettingsProvider.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\UserInteraction\UserInteractionQueue.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\FunctionCall\IAssistantUIContextAware.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\FunctionCall\Permissions\DiffPermissionContentRenderer.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\AssistantBlackboard.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ModeProvider.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Events\EventRetryableErrorOccurred.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\AssistantTextField.Context.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\Settings\AssistantProjectSettingsPage.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\FunctionCall\FindProjectAssetsFunctionCallElement.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\ConversationReloadManager.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\FunctionCall\Interactions\PlanApprovalFooterContent.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\ChatElementBlock\ChatElementBlockPlan.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\Settings\SkillWarningBox.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Markup\Renderers\LiteralInlineRenderer.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\SubagentHeaderElement.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Markup\Renderers\LinkInlineRenderer.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\AssistantDropdownEntry.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\AssistantDropdown.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\ChatElementBlock\ChatElementBlockAcpToolCall.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Preview\InlineUSSProcessor.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\FunctionCall\GetProjectSettingFunctionCallElement.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\ChatElementFeedback.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Preview\StyleValueParsers.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\FunctionCall\CodeEditTabbedContent.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\PlanPromptBanner.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\ChatElementBlock\ChatElementBlockInfo.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\AskAssistantButton.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\AssemblyInfo.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\FunctionCall\Interactions\AskUserInteractionElement.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\SettingsPopup.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\UserInteraction\UserInteractionBar.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Markup\MarkupUtil.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Utils\CodeSyntaxHighlight.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Preview\UIPreviewSystem.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\AssistantTextField.Dropdowns.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\Settings\ConfigureCheckpointSettingsView.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\FunctionCall\ExecutionLogFormatter.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\FunctionCall\RunReadOnlyCommandFunctionCallElement.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\Settings\AssistantSkillsSettingsView.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Events\EventExpandedPanelOpened.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Utils\LogUtils.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\IContextReferenceVisualElement.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\FunctionCall\CodeEditFunctionCallElement.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Utils\CacheUtils.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Markup\Renderers\HtmlInlineRenderer.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Markup\Renderers\ListItemBlockRenderer.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\ChatElementResponse.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\FunctionCall\FunctionCallParameterFormatter.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\WhatsNew\WhatsNewBanner.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\ChatElementBlock\ChatElementBlock.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\ChatElementBlock\ChatElementBlockError.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\CheckpointConfirmationDialogWindow.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Utils\StringUtils.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ManagedScrollView.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\History\HistoryPanelConversationEntry.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\CodeBlockElement.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\ChatElementBlock\ChatElementBlockThought.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\FunctionCall\IInlineHeaderActionsProvider.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\ConversationSearch\SearchHighlighter.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\SelectionPopup.KeyboardNavigation.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\FunctionCall\GameObjectFunctionCallElements.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\FunctionCall\GetTextAssetContentFunctionCallElement.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\ChatElementCheckpoint.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\LoadingSpinner.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Utils\ContextUtils.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\PromptHistoryNavigator.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Preview\USSParser.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\History\HistoryPanelHeaderEntry.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Utils\InternalLogUtils.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Data\MessageBlocks\FunctionCallBlockModel.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\Settings\ConfigureDefaultPermissionsView.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\Settings\AssistantUISettingsPage.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Markup\Renderers\TableRenderer.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\ChatElementTable.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\FunctionCall\Permissions\PermissionInteraction.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\AssistantUIAPIInterpreter.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\FunctionCall\AcpWidgetRendererFactory.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\ChatElementList.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\PromptSuggestions\PromptSuggestionsBarBase.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\FunctionCall\Container\AssistantWindowUiContainer.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Utils\MessageUtils.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\UserAttentionNotifier.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Markup\Renderers\FencedCodeBlockRenderer.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Data\CodeLineMarkingType.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\FunctionCall\Interactions\PlanReviewHeaderActions.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\ChatElementUser.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\History\HistoryPanelEntryWrapper.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Events\EventInlineInteractionCompleted.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Markup\Renderers\ParagraphRenderer.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Utils\ResponseFeedbackQueue.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\PromptSuggestions\NewChatTopicBar.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Data\UserInteractionEntry.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\FunctionCall\AcpToolCallElement.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\ConversationSearch\AssistantSearchMessageConverter.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\CommandDisplayTemplate.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Events\EventExpandedPanelClosed.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\FunctionCall\Permissions\PermissionContentRendererRegistry.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\FunctionCall\FindSceneObjectsFunctionCallElement.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\ChatElementSourceEntry.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\FunctionCall\AcpCodeEditRenderer.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\PromptPopup\SendPromptButton.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Markup\Renderers\LineBreakInlineRenderer.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\ChatElementBlock\ChatElementBlockRevertedMessagesLink.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\FunctionCall\AcpToolCallRendererFactory.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\ConversationSearch\ConversationSearcher.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\FunctionCall\Interactions\ExitPlanModeInteractionElement.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Preview\ColorParser.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\PromptSuggestions\PromptSuggestionData.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\ConsoleUI.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\ChatElementBlock\ChatElementBlockMarkdown.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Utils\ViewCache.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\Settings\Gateway\EnvironmentVariableRow.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\ConversationLoader.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Markup\Renderers\QuoteBlockRenderer.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\UserInteraction\ApprovalInteractionContent.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\SelectionPopup.Tabs.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Utils\VisualElementExtensions.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\Settings\AssistantSettingsPage.AssetKnowledge.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Events\EventExpandedPanelCloseRequested.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\SelectionPopup.Search.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\AssistantWindow.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Utils\UXLoader.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Preview\ElementTypeRegistry.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Events\EventInlineInteractionPushed.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\AssistantView.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Utils\ImageUtils.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\FunctionCall\Interactions\TodoTaskRow.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\GatewayProjectSettingsProvider.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Utils\ExecutionLogUtils.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\ChatElementBase.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Markup\ChatLinkInlineParser.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ScreenshotOpenerService.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\ChatElementResponseSection.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\AcpInstallDialogWindow.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\PromptPopup\PromptPopupView.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\SelectionElement.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\FunctionCall\ChatElementFunctionCallFactory.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\FunctionCall\Interactions\AskUserQuestionPane.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Preview\StyleTypeConverters.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\Annotations\MacCgCapture.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\FunctionCall\Container\DialogView.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\SkillsSettingsProvider.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\FunctionCall\FunctionCallElement.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\Settings\SkillFolderRow.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\AssistantSettingsProvider.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\IAssistantHostWindow.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\FunctionCall\IExpandableRenderer.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ContextUsageView.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Markup\FencedContent.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Preview\UXMLParser.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\Settings\AssistantSettingsPage.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Data\MessageBlocks\AcpPlanBlockModel.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\ChatElementWrapper.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\UserInteraction\INavigableInteractionView.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\AssistantExpandedPanel.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\Settings\Gateway\GatewayPreferencesPage.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Events\EventHistoryConversationSelected.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\PromptSuggestions\PromptSuggestionsBar.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Utils\StyleCache.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\UserInteraction\InteractionContentView.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\FunctionCall\FunctionCallUIPreviewHandler.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Data\MessageModel.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Markup\MarkdownAPI.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\PreviewChip.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\PromptPopup\PromptPopupWindow.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\Annotations\NativeScreenCapture.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Utils\SettingsProviderSearchHelper.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\FunctionCall\GetObjectDataFunctionCallElement.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\ChatElementQuote.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\FunctionCall\Interactions\AskUserOtherRow.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Data\MessageBlocks\PromptBlockModel.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\VirtualizedListView.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\MCPClient\McpToolItemView.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Utils\ArrayUtils.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Data\AssistantDropdownItemData.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Utils\ToolkitExtensions.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Markup\Renderers\ObjectRenderer.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\WhatsNewMenuLink.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\FunctionCall\RunCommandFunctionCallElement.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\ChatElementCommandCodeBlock.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Data\ConversationModel.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\FunctionCall\Interactions\PlanReviewExpandedContent.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\FunctionCall\Permissions\MarkdownPermissionContentRenderer.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Events\EventInteractionQueueChanged.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Utils\SessionStateJsonCache.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Data\MessageBlocks\AcpToolCallBlockModel.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Utils\AssistantImage.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\AssistantUIConstants.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\Annotations\WindowsGdiCapture.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\ChatElementUI.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ManagedTemplate.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ContextAttachmentElement.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\AssistantConversationPanel.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Markup\Renderers\HtmlEntityInlineRenderer.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\ConversationSearch\ConversationSearchResult.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\CompletedActionsSection.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Events\EventExpandedViewRequested.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\GatewayPreferencesProvider.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\Settings\SkillDetailsBlock.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ProgressElement.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Data\UserInteractionId.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\FunctionCall\Interactions\AskUserOptionRow.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Utils\TimerUtils.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ManagedListEntry.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Data\MessageBlocks\IMessageBlockModel.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Markup\Renderers\EmphasisInlineRenderer.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\ChatElementBlock\ChatElementBlockAnswer.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Data\ParsedReference.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\FunctionCall\ScreenshotFunctionCallElement.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\AssistantView.DragDrop.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\SelectionPopup.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Data\MessageBlocks\AnswerBlockModel.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Data\CompletedActionData.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\ConversationSearch\AssistantViewSearchHelper.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\ChatElementBlock\ChatElementBlockBase.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Events\EventRevertedTimeStampFilterRequested.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ContextMenuUtility.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\Annotations\EditScreenCaptureWindow.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ContextElement.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\Annotations\AnnotationToolbarOverlay.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Markup\Renderers\ListBlockRenderer.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\McpClientSettingsProvider.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\FunctionCall\AcpRunCommandRenderer.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Utils\CompletedActionsExtractor.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\ChatElementBlock\ChatElementBlockFunctionCall.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\ChatElementBlock\ChatElementBlockCheckpoint.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\CompletedActionEntry.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Data\MessageModelRole.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\MCPClient\McpServerEntryView.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Data\MessageBlocks\InfoBlockModel.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Preview\PreviewConstants.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Utils\ErrorHandlingUtils.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Markup\Renderers\HeadingBlockRenderer.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\FunctionCall\Container\DialogWindow.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\FunctionCall\SpawnSubagentFunctionCallRenderer.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\AssistantView.Context.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\ContextVisualElementRegistry.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Markup\Renderers\ThematicBreakBlockRenderer.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ContextDropdown.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\ChatElementBlock\ChatElementReasoningSequence.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\AssistantUISessionState.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\FunctionCall\ImagePreviewFunctionCallElementBase.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\FigmaAuthBar.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\FunctionCall\Container\DialogToolUiContainer.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Data\MessageBlocks\ErrorBlockModel.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatDropZone.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\FunctionCall\Permissions\IPermissionContentRenderer.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Data\MessageBlocks\ThoughtBlockModel.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\ChatElements\FunctionCall\Permissions\EditorToolPermissions.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\MCPClient\McpClientSettingsView.cs" />
+    <Compile Include="Packages\com.unity.ai.assistant\Editor\UI\AssistantUISettingsProvider.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Assets\Tests\Tests.asmdef" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\AgentPlanPanel.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\AssistantSharedLight.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\UserInteractionBar.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\AskAssistantButton.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\GatewayPreferencesPage.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\PromptSuggestionsBar.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\PreviewChip.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\ChatElementBlockInfo.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\ChatElementBlockRevertedMessagesLink.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\McpServerEntryView.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\ContextDropdown.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\ChatElementBlockThought.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\SubagentHeaderElement.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\SelectionPopup.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\McpToolItemView.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\ChatElementResponseSection.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\AssistantDropdownEntry.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\ChatElementBlockError.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\ChatElementSystem.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\PlanReviewHeaderActions.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\ChatElementResponse.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\ChatElementBlockAcpToolCall.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\AssistantConversationPanel.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\SkillFolderRow.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\ChatElementBlockAnswer.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\AssistantSettingsPage.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\McpClientSettingsView.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\CompletedActionEntry.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\TodoProgressInteractionElement.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\HistoryPanelEntryWrapper.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\ChatElementBlockFunctionCall.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Unity.AI.Assistant.UI.Editor.asmdef" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\ChatElementBlockPlan.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\McpServerManagerView.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\HistoryPanelHeaderEntry.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\ChatElementUser.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\ChatElementSourceEntry.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\SelectionPopup.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\PromptPopupView.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\AssistantDropdown.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\ContextElement.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\GatewayPreferencesPage.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\CompletedActionEntry.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\CodeEditFunctionCallElement.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\WhatsNewBanner.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\FunctionCallBaseElement.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\ContextAttachmentElement.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\ChatElementReasoningSequence.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\ChatElementSystem.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\RetryInteractionContent.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\SendPromptButton.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\AssistantSharedDark.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\SendPromptButton.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\SkillDetailsBlock.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\RunCommandFunctionCallElement.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\McpClientSettingsView.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\SubagentHeaderElement.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\AskUserInteractionElement.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\SelectionElement.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\CodeBlockElement.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\ChatElementFeedback.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\PromptPopupView.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\ChatDropZone.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\AnnotationToolbarOverlay.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\ChatElementBlockRevertedMessagesLink.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\AskUserInteractionElement.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\EditScreenCaptureWindow.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\FigmaAuthBar.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\ChatElementCheckpoint.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\CheckpointConfirmationDialog.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\SkillWarningBox.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\PlanPromptBanner.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\HistoryPanel.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\AssistantView.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\RunCommandFunctionCallElement.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\AssistantDropdown.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\SkillWarningBox.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\ChatElementBlockCheckpoint.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\AskUserOptionRow.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\PlanReviewHeaderActions.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\ChatElementTable.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\ChatElementReasoningSequence.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\AssistantView.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\McpServerEntryView.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\AnnotationToolbarOverlay.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\ChatElementQuote.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\UserInteractionBar.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\McpToolItemView.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\ContextDropdown.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\ChatElementCommandCodeBlock.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\HistoryPanelConversationEntry.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\McpServerManagerView.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\AssistantSettingsPage.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\ExitPlanModeInteractionElement.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\ChatElementBlockAcpToolCall.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\ChatElementBlockThought.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\AssistantSkillsSettingsView.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\SkillDetailsBlock.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\ChatElementUser.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\ContextElement.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\AssistantProjectSettingsPage.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\TodoProgressInteractionElement.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\AskAssistantButton.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\SkillFolderRow.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\ProgressElement.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\ChatElementBlockError.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\GatewayProjectSettingsPage.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\FunctionCallShared.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\ScreenshotFunctionCallElement.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\ChatElementQuote.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\CheckpointAffectedFileRow.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\PreviewChip.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\ChatElementResponse.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\CheckpointAffectedFileRow.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\CodeEditTabbedContent.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\AssistantSkillsSettingsView.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\AssistantTextField.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\ContextUsageView.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\ExitPlanModeInteractionElement.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\CodeEditTabbedContent.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\PromptSuggestionsBar.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\ChatElementBlockPlan.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\LoadingSpinner.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\ProviderEnvironmentariablesUI.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\DialogView.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\AssistantExpandedPanel.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\AcpInstallDialogView.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\TodoTaskRow.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\AssistantUISettingsPage.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\ChatElementSourceEntry.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\ChatElementList.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\CheckpointConfirmationDialog.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\HistoryPanelHeaderEntry.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\AskUserQuestionPane.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\ConfigureCheckpointSettingsView.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\ChatElementUI.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\FunctionCallBaseElement.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\CompletedActionsSection.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\ChatElementTable.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\PlanPromptBanner.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\SelectionElement.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Scripts\Components\Annotations\ImageCompositing.shader" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\DialogView.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\HistoryPanelConversationEntry.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\ProgressElement.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\ChatElementWrapper.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\PlanReviewExpandedContent.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\PlanApprovalFooterContent.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\ChatDropZone.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\SettingsPopup.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\SettingsPopup.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\ConfigureCheckpointSettingsView.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\HistoryPanel.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\ChatElementFeedback.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\ChatElementCommandCodeBlock.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\CompletedActionsSection.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\PlanApprovalFooterContent.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\ApprovalInteractionContent.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\GatewayProjectSettingsPage.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\ConfigureDefaultPermissionsView.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\AssistantShared.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\ApprovalInteractionContent.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\AssistantDropdownEntry.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\QuestionInteractionElement.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\ChatElementCheckpoint.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\AssistantUISettingsPage.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\CodeEditFunctionCallElement.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\ChatElementShared.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\ChatElementWrapper.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\WhatsNewBanner.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\AssistantDisclaimer.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\HistoryPanelEntryWrapper.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\NewChatTopicBar.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\PlanReviewExpandedContent.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\AssistantProjectSettingsPage.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\ChatElementList.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\CodeBlockElement.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\ConfigureDefaultPermissionsView.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\ContextUsageView.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\FigmaAuthBar.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\ChatElementUI.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\RetryInteractionContent.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\ChatElementBlockCheckpoint.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\AssistantTextField.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\AssistantConversationPanel.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\ChatElementBlockFunctionCall.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\AssistantExpandedPanel.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\ChatElementResponseSection.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Views\ChatElementBlockInfo.uxml" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\ContextAttachmentElement.uss" />
+    <None Include="Packages\com.unity.ai.assistant\Editor\UI\Styles\AcpInstallDialogView.uss" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">
@@ -675,8 +1126,24 @@
       <HintPath>Library\PackageCache\com.unity.ext.nunit@44f7d31723bd\net472\unity-custom\nunit.framework.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="SimpleInjector">
-      <HintPath>Assets\Packages\SimpleInjector.5.5.0\lib\netstandard2.1\SimpleInjector.dll</HintPath>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>Library\PackageCache\com.unity.nuget.newtonsoft-json@4dfd81071c64\Runtime\Newtonsoft.Json.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.CodeAnalysis.CSharp_AIA">
+      <HintPath>Packages\com.unity.ai.assistant\Plugins\CodeAnalysis\6_5\Microsoft.CodeAnalysis.CSharp_AIA.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.CodeAnalysis_AIA">
+      <HintPath>Packages\com.unity.ai.assistant\Plugins\CodeAnalysis\6_5\Microsoft.CodeAnalysis_AIA.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Markdig_AIA">
+      <HintPath>Packages\com.unity.ai.assistant\Plugins\Markdig\Markdig_AIA.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe_AIA">
+      <HintPath>Packages\com.unity.ai.assistant\Plugins\Shared\System.Runtime.CompilerServices.Unsafe_AIA.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="mscorlib">
@@ -1207,22 +1674,6 @@
       <HintPath>C:\Program Files\Unity\Hub\Editor\6000.5.0b2\Editor\Data\BCLExtensions\TargetingPacks\netstandard2.1\ref\System.Text.Json.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="UnityEngine.TestRunner">
-      <HintPath>Library\ScriptAssemblies\UnityEngine.TestRunner.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="UnityEditor.TestRunner">
-      <HintPath>Library\ScriptAssemblies\UnityEditor.TestRunner.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.Burst">
-      <HintPath>Library\ScriptAssemblies\Unity.Burst.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.Collections">
-      <HintPath>Library\ScriptAssemblies\Unity.Collections.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="UnityEditor.UI">
       <HintPath>Library\ScriptAssemblies\UnityEditor.UI.dll</HintPath>
       <Private>False</Private>
@@ -1231,9 +1682,25 @@
       <HintPath>Library\ScriptAssemblies\UnityEngine.UI.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="UnityEngine.TestRunner">
+      <HintPath>Library\ScriptAssemblies\UnityEngine.TestRunner.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEditor.TestRunner">
+      <HintPath>Library\ScriptAssemblies\UnityEditor.TestRunner.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="GameAssembly.csproj" />
+    <ProjectReference Include="Unity.AI.Assistant.Editor.csproj" />
+    <ProjectReference Include="Unity.AI.Assistant.Bridge.Editor.csproj" />
+    <ProjectReference Include="Unity.AI.Assistant.Agent.Dynamic.Extension.Editor.csproj" />
+    <ProjectReference Include="Unity.AI.Toolkit.Accounts.csproj" />
+    <ProjectReference Include="Unity.AI.Assistant.Runtime.csproj" />
+    <ProjectReference Include="Unity.AI.Assistant.Tools.Editor.csproj" />
+    <ProjectReference Include="Unity.AI.Assistant.Annotations.Editor.csproj" />
+    <ProjectReference Include="Unity.AI.Tracing.csproj" />
+    <ProjectReference Include="Unity.AI.Toolkit.Async.csproj" />
   </ItemGroup>
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
   <ItemGroup>
