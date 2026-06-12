@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using Unity.Mathematics;
 using UnityEngine;
 
 namespace Game.Storage
 {
-	public class FileManager
+	public class FileManager : IFileManager
 	{
 		private const string worldInfoFile = "WorldInfo.json";
 		private const string RegionFileSuffix = "Region";
@@ -17,6 +15,8 @@ namespace Game.Storage
 		private readonly string regionsDirectory;
 
 		public readonly WorldInfo World;
+
+		WorldInfo IFileManager.World => throw new NotImplementedException();
 
 		private FileManager(WorldInfo world, string worldDirectoryName)
 		{
@@ -32,7 +32,7 @@ namespace Game.Storage
 			World = world;
 		}
 
-		public static FileManager CreateWorld(WorldInfo world)
+		public static IFileManager CreateWorld(WorldInfo world)
 		{
 			string worldDirectoryName = Guid.NewGuid().ToString();
 			string worldDirectory;
@@ -46,7 +46,7 @@ namespace Game.Storage
 			return new FileManager(world, worldDirectoryName);
 		}
 
-		public static FileManager LoadWorld(string worldDirectoryName)
+		public static IFileManager LoadWorld(string worldDirectoryName)
 		{
 			string worldDirectory = Path.Combine(Application.persistentDataPath, worldDirectoryName);
 			if (!Directory.Exists(worldDirectory)) {

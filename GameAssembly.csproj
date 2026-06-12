@@ -100,6 +100,7 @@
     <Compile Include="Assets\Game\Scripts\Storage\ChunkSize.cs" />
     <Compile Include="Assets\Game\DistanceComparer.cs" />
     <Compile Include="Assets\Game\Scripts\Storage\FileManager.cs" />
+    <Compile Include="Assets\Game\Scripts\Storage\IFileManager.cs" />
     <Compile Include="Assets\Game\Scripts\Storage\PatchPointer.cs" />
     <Compile Include="Assets\Game\Scripts\Collections\SegmentsChain.cs" />
     <Compile Include="Assets\Game\Scripts\Storage\ChunkPatch.cs" />

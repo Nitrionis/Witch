@@ -95,9 +95,9 @@ namespace Game.Storage
 
 			public readonly Func<UnloadTask> ActionDelegate;
 
-			private readonly FileManager fileManager;
+			private readonly IFileManager fileManager;
 
-			public UnloadTask(FileManager fileManager)
+			public UnloadTask(IFileManager fileManager)
 			{
 				ActionDelegate = SaveToFile;
 				this.fileManager = fileManager;
@@ -202,7 +202,7 @@ namespace Game.Storage
 
 			public readonly Func<LoadTask> ActionDelegate;
 
-			private readonly FileManager fileManager;
+			private readonly IFileManager fileManager;
 			private FileStream fileStream;
 			private int metadataStreamOffset;
 			private int patchesStreamOffset;
@@ -216,7 +216,7 @@ namespace Game.Storage
 			private int currentPatchIndexInSlot;
 			private Pool<RegionChanges>.Slot regionChangesSlot;
 
-			public LoadTask(FileManager fileManager)
+			public LoadTask(IFileManager fileManager)
 			{
 				this.fileManager = fileManager;
 				ActionDelegate = Tick;

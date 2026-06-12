@@ -148,13 +148,13 @@ namespace Game.Storage
 		{
 			private readonly byte* buffer = (byte*)Marshal.AllocHGlobal(BufferSizeForUnpack);
 
-			private readonly FileManager fileManager;
+			private readonly IFileManager fileManager;
 			public readonly Func<LoadTask> ActionDelegate;
 
 			public RegionBaseLocation RegionBaseLocation;
 			public Pool<RegionBase>.Slot RegionBaseSlot;
 
-			public LoadTask(FileManager fileManager)
+			public LoadTask(IFileManager fileManager)
 			{
 				this.fileManager = fileManager;
 				ActionDelegate = Tick;

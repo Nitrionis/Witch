@@ -81,7 +81,7 @@ namespace Game.Storage
 		public class Managed
 		{
 			private readonly Storage* storage;
-			private readonly FileManager fileManager;
+			private readonly IFileManager fileManager;
 			private readonly IChunkProcessor chunkProcessor;
 
 			private readonly Queue<RegionBase.LoadTask> freeLoadRegionBaseTasks;
@@ -93,7 +93,7 @@ namespace Game.Storage
 			private readonly Queue<RegionChanges.UnloadTask> freeUnloadRegionChangesTasks;
 			private readonly List<Task<RegionChanges.UnloadTask>> unloadRegionChangesTasks;
 
-			public Managed(FileManager fileManager, Storage* storage, IChunkProcessor chunkProcessor)
+			public Managed(IFileManager fileManager, Storage* storage, IChunkProcessor chunkProcessor)
 			{
 				this.fileManager = fileManager;
 				this.storage = storage;
@@ -320,7 +320,7 @@ namespace Game.Storage
 		}
 
 		public Storage(
-			FileManager fileManager,
+			IFileManager fileManager,
 			SessionRewindableAllocator allocator,
 			DisposeList sessionDisposeList,
 			PlayersCache* playerCache)
