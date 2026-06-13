@@ -64,9 +64,9 @@ namespace Game.Storage
 		/// <summary>
 		/// Gets file path for a specific patch group.
 		/// </summary>
-		public string GetRegionChangesFilePath(RegionChangesLocation regionChangesLocation)
+		public string GetRegionChangesFilePath(RegionChangesLocation location)
 		{
-			string fileName = $"PatchesGroup_x{regionChangesLocation.AxisIndices.x}_y{regionChangesLocation.AxisIndices.y}{fileExtension}";
+			string fileName = $"PatchesGroup_x{location.AxisIndices.x}_y{location.AxisIndices.y}{fileExtension}";
 			return Path.Combine(regionsDirectory, fileName);
 		}
 
