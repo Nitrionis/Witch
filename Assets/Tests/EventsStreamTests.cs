@@ -42,7 +42,7 @@ namespace Tests
 			private readonly DisposeList disposeList = new();
 			private readonly SessionRewindableAllocator allocator;
 			private readonly ProcessingState* state;
-			private EventsStream stream;
+			private EventsStream* stream;
 
 			public Harness(int writerCount = 1)
 			{
@@ -59,19 +59,14 @@ namespace Tests
 				>(SetHealthProcessor.Process);
 				processors[6] = new EventsStream.Reader.ProcessorMethod(state, processSetHealth);
 
-				stream = new EventsStream(disposeList, allocator, writerCount, processors);
+				stream = allocator.AllocateArray<EventsStream>(length: 1);
+				*stream = new EventsStream(disposeList, allocator, writerCount, processors);
 			}
 
-			public EventsStream.Writer CreateWriter(int writerIndex = 0)
-			{
-				return new EventsStream.Writer(
-					(EventsStream*)UnsafeUtility.AddressOf(ref stream),
-					writerIndex
-				);
-			}
+			public EventsStream.Writer CreateWriter(int writerIndex = 0) =>
+				new EventsStream.Writer(stream, writerIndex);
 
-			public EventsStream.Reader CreateReader() =>
-				new((EventsStream*)UnsafeUtility.AddressOf(ref stream));
+			public EventsStream.Reader CreateReader() => new(stream);
 
 			public int ProcessedCount => state->ProcessedCount;
 
