@@ -16,11 +16,11 @@ namespace Game.WorldGeneration
 			var random = new System.Random();
 			generatorPhases = new IGeneratorPhase[] {
 				new AddIsland(random, probability: 0.2f, skipWorldBoundary: true), // 16x16
+				new ZoomPhase(),  // 32x32
 				new AddTemperature(random),
 				new SmoothTemperature(skipCorners: false),
-				//new SmoothTemperature(skipCorners: true),
-				new ZoomPhase(),  // 32x32
-				new BiomeDiffusion(random, 0.03f),
+				new TemperatureToBiome(random),
+				//new BiomeDiffusion(random, 0.03f),
 				new AddIsland(random, probability: 0.3f, skipWorldBoundary: true),
 				new ZoomPhase(),  // 64x64
 				new ChangeCoastline(
@@ -116,7 +116,7 @@ namespace Game.WorldGeneration
 				for (int y = 0; y < layer.SideLength; y++) {
 					for (int x = 0; x < layer.SideLength; x++) {
 						var cell = layer[x, y];
-						var color = cell.IsLand ? TemperatureToColor(cell.Biome) : Color.blue;
+						var color = TemperatureToColor(cell.Biome, cell.IsLand);
 						colors[x + y * layer.SideLength] = color;
 					}
 				}
@@ -126,9 +126,9 @@ namespace Game.WorldGeneration
 			}
 		}
 
-		private Color TemperatureToColor(byte temperature)
+		private Color TemperatureToColor(byte temperature, bool isLand)
 		{
-			if (temperature < 25) {
+			/*if (temperature < 25) {
 				return Color.white;
 			}
 			if (temperature < 50) {
@@ -137,7 +137,23 @@ namespace Game.WorldGeneration
 			if (temperature < 75) {
 				return Color.green;
 			}
-			return Color.orange;
+			return Color.orange;*/
+			var biome = (Biome)temperature;
+			var color = Color.black;
+			switch (biome) {
+				case Biome.Null: color = Color.cyan; break;
+				case Biome.Snow: color = Color.white; break;
+				case Biome.Desert: color = Color.orange; break;
+				case Biome.Jungle: color = Color.greenYellow; break;
+				case Biome.Forest: color = Color.darkGreen; break;
+				case Biome.PineForest: color = Color.forestGreen; break;
+				default: color = Color.cyan; break;
+			}
+			if (!isLand) {
+				//color = Color.Lerp(color, Color.blue, 0.5f);
+				color = Color.blue;
+			}
+			return color;
 		}
 	}
 }

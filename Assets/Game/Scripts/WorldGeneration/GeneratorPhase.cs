@@ -6,7 +6,13 @@ namespace Game.WorldGeneration
 {
 	public enum Biome : byte
 	{
-		Null = 0
+		Null = 0,
+		Sea = 1,
+		Jungle = 2,
+		Forest = 3,
+		PineForest = 4,
+		Desert = 5,
+		Snow = 6,
 	}
 
 	public interface IGeneratorPhase
@@ -161,6 +167,39 @@ namespace Game.WorldGeneration
 				}
 			}
 			return layerDst;
+		}
+	}
+
+	public class TemperatureToBiome : IGeneratorPhase
+	{
+		private readonly System.Random random;
+
+		public TemperatureToBiome(Random random)
+		{
+			this.random = random;
+		}
+
+		public Layer Execute(Layer layer)
+		{
+			int start = 0;
+			int end = layer.SideLength;
+			for (int x = start; x < end; x++) {
+				for (int y = start; y < end; y++) {
+					ref var cell = ref layer[x, y];
+					var value = random.NextDouble();
+					var biome = cell.Biome;
+					if (biome >= 100) { // hot
+						cell.Biome = (byte)Biome.Desert;
+					} else if (biome >= 50) { // warm
+						cell.Biome = (byte)Biome.Jungle;
+					} else if (biome > 0) { // medium
+						cell.Biome = (byte)(value < 0.5 ? Biome.Forest : Biome.PineForest);
+					} else { // cold
+						cell.Biome = (byte)Biome.Snow;
+					}
+				}
+			}
+			return layer;
 		}
 	}
 
